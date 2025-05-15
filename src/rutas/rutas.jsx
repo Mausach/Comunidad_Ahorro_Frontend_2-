@@ -1,6 +1,6 @@
 import React from 'react'
 import { HomeLogin } from '../paginas/HomeLogin/HomeLogin'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, HashRouter, Route, Routes } from 'react-router-dom'
 import { Creador } from '../paginas/Creater/Creador'
 import { Gerente } from '../paginas/Gerencia/Gerente'
 import { GestEmpleado } from '../paginas/Gerencia/GestEmpleado'
@@ -20,13 +20,36 @@ import { ReportVentas } from '../paginas/Gerencia/ReportVentas'
 import { ReportPrestamos } from '../paginas/Gerencia/ReportPrestamos'
 
 
+/*
+Solucion para el f5 de vercel
 
+Reemplaza BrowserRouter por HashRouter
+
+Las URLs tendrán un # antes de la ruta:
+
+Antes: tudominio.com/gerencia
+
+Ahora: tudominio.com/#/gerencia
+
+Ventajas:
+
+ Soluciona el error 404 al recargar: El servidor solo ve la parte antes del # (siempre cargará index.html).
+
+ Zero configuración en Vercel: No necesitas tocar vercel.json.
+
+Desventajas:
+
+ URLs menos limpias (con #).
+
+ No recomendado para SEO (pero si es una app privada, no hay problema).
+
+*/
 
 
 export const AppRouter = () => {
   return (
-    <BrowserRouter>
-      <Routes>
+    <HashRouter>
+        <Routes>
 
         <Route path="/*" element={<HomeLogin />} />
         <Route path="/creador" element={<Creador />} />
@@ -53,6 +76,8 @@ export const AppRouter = () => {
 
 
       </Routes>
-    </BrowserRouter>
+
+    </HashRouter>
+    
   )
 }

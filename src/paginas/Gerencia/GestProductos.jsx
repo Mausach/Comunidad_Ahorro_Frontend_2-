@@ -157,7 +157,7 @@ export const GestProductos = () => {
       ) : (
         <>
           <Button variant="outline-secondary" onClick={handleBackStock} className="m-3">
-            <i className="bi bi-arrow-left"></i> Volver a la card
+            <i className="bi bi-arrow-left"></i> Volver a productos
           </Button>
           <GestStock
           handleStock={handleStock}

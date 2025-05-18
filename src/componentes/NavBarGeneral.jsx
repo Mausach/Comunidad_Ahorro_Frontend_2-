@@ -94,12 +94,14 @@ export const NavBar = ({ usuario }) => {
         });
     }
 
-    useEffect(() => {
+
+
+
+useEffect(() => {
+    if (usuario?.rol !== 'cobrador') {  // Solo ejecuta si el rol NO es 'cobrador'
         verificarNotificacionesNavbar(setNotificaciones, navigate);
-    }, []);
-
-
-console.log(notificaciones)
+    }
+}, [usuario?.rol]);  // Dependencia: si el rol cambia, se reevalúa
 
     const renderNavbarPorRol = () => {
         switch (usuario.rol) {

@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Button, Form, Modal, ListGroup, Accordion, Card, Badge, Spinner, Alert } from 'react-bootstrap';
 import CuotaItem from './CuotaItem';
 
-export const ListaVentas = ({ ventas, navigate, usuario, refreshData,setRefreshData }) => {
+export const ListaVentas = ({ ventas, navigate, usuario, refreshData, setRefreshData }) => {
     const [showClienteModal, setShowClienteModal] = useState(false);
     const [selectedVenta, setSelectedVenta] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [showVentaDetails, setShowVentaDetails] = useState(false);
-     const [forceUpdate, setForceUpdate] = useState(0); // Nuevo estado
+    const [forceUpdate, setForceUpdate] = useState(0); // Nuevo estado
 
     // Filtrado de ventas
     const filteredVentas = ventas.filter(venta => {
@@ -22,10 +22,26 @@ export const ListaVentas = ({ ventas, navigate, usuario, refreshData,setRefreshD
 
     // Clasificar tipo de venta
     const getTipoVenta = (venta) => {
-        if (venta.producto.detalle.prestamo) return "Préstamo";
-        if (venta.producto.detalle.venta.permutada) return "Venta Permutada";
-        if (venta.producto.detalle.venta.entregaInmediata) return "Entrega Inmediata";
-        return "Venta Directa";
+        try {
+            if (!venta?.producto?.detalle) return "Tipo de venta no especificado";
+
+            const detalle = venta.producto.detalle;
+
+            if (detalle.prestamo) return "Préstamo";
+
+            if (detalle.venta?.banderas) {
+                const { banderas } = detalle.venta;
+                if (banderas.permutada) return "Venta Permutada";
+                if (banderas.entregaInmediata) return "Entrega Inmediata";
+                if (banderas.largoPlazo) return "Plan a largo plazo";
+                if (banderas.ventaDirecta) return "Venta Directa";
+            }
+
+            return "Tipo de venta no especificado";
+        } catch (error) {
+            console.error("Error al determinar tipo de venta:", error);
+            return "Tipo de venta no especificado";
+        }
     };
 
     // Badge para estado
@@ -39,7 +55,7 @@ export const ListaVentas = ({ ventas, navigate, usuario, refreshData,setRefreshD
         }
     };
 
-     // Efecto para actualizar la venta seleccionada
+    // Efecto para actualizar la venta seleccionada
     useEffect(() => {
         if (showVentaDetails && selectedVenta) {
             const ventaActualizada = ventas.find(v => v._id === selectedVenta._id);
@@ -122,7 +138,7 @@ export const ListaVentas = ({ ventas, navigate, usuario, refreshData,setRefreshD
                             <div className="row">
                                 <div className="col-md-6">
                                     <h6>Información General</h6>
-                                    <p><strong>Fecha:</strong> {new Date(selectedVenta.fechaRealizada).toLocaleDateString()}</p>
+                                    <p><strong>Fecha:</strong> {selectedVenta.fechaRealizada}</p>
                                     <p><strong>Tipo:</strong> {getTipoVenta(selectedVenta)}</p>
                                     <p><strong>Monto Total:</strong> ${selectedVenta.monto_suscripcion_vta_dir.toLocaleString()}</p>
                                     <p><strong>Método Pago:</strong> {selectedVenta.metodoPago_monto_sus_vta}</p>
@@ -131,16 +147,26 @@ export const ListaVentas = ({ ventas, navigate, usuario, refreshData,setRefreshD
 
                                 <div className="col-md-6">
                                     <h6>Detalles del Producto</h6>
-                                    {selectedVenta.producto.detalle.prestamo && (
+                                    <p><strong>Producto:</strong> {selectedVenta.producto.nombre}</p>
+
+                                    {getTipoVenta(selectedVenta) === "Préstamo" && (
                                         <>
-                                            <p><strong>Monto:</strong> ${selectedVenta.producto.detalle.prestamo.montoPrestado.toLocaleString()}</p>
+                                            <p><strong>Monto:</strong> ${selectedVenta.producto.detalle.prestamo.montoPrestado?.toLocaleString()}</p>
                                             <p><strong>Plazo:</strong> {selectedVenta.producto.detalle.prestamo.plazo}</p>
                                         </>
                                     )}
-                                    {selectedVenta.producto.detalle.venta && (
+
+                                    {getTipoVenta(selectedVenta) !== "Préstamo" && (
                                         <>
-                                            <p><strong>Producto:</strong> {selectedVenta.producto.nombre}</p>
-                                            {selectedVenta.producto.detalle.venta.permutada && (
+                                            <p><strong>Tipo venta:</strong> {getTipoVenta(selectedVenta)}</p>
+                                            {selectedVenta.producto.detalle.venta.itemInventario && (
+                                                <>
+                                                    <p><strong>nombre:</strong> {selectedVenta.producto.detalle.venta.itemInventario.nombre}</p>
+                                                    <p><strong>Modelo:</strong> {selectedVenta.producto.detalle.venta.itemInventario.modelo}</p>
+                                                    <p><strong>Serial:</strong> {selectedVenta.producto.detalle.venta.itemInventario.serial}</p>
+                                                </>
+                                            )}
+                                            {selectedVenta.producto.detalle.venta.banderas?.permutada && (
                                                 <p><strong>Objeto recibido:</strong> {selectedVenta.producto.detalle.venta.objetoRecibido}</p>
                                             )}
                                         </>

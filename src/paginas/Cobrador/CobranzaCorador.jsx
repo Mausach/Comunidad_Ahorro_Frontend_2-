@@ -28,7 +28,7 @@ export const CobranzaCobrador = () => {
   };
 
 
-console.log(usuario.dni)
+
 
     useEffect(() => {
   const cargarDatos = async () => {

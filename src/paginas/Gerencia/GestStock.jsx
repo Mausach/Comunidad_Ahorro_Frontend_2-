@@ -97,7 +97,7 @@ export const GestStock = ({ handleStock, handleBackStock, producto, setRefreshDa
                   {/* Nombre, modelo y serial */}
                   <div className="col-12 col-md-5">
                     <span className="fw-bold d-block">
-                      {item.nombre_item} - {item.modelo}
+                      {item.nombreItem} - {item.modelo}
                     </span>
                     <small className="text-muted">(IMEI: {item.serial})</small>
                   </div>

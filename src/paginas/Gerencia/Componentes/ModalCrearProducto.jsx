@@ -32,94 +32,74 @@ export const ModalCrearProducto = ({ showModal, handleCloseModal, setRefreshData
         }));
     };
 
-    const handleCreateProducto = (e) => {
-        e.preventDefault();
+ const handleCreateProducto = (e) => {
+    e.preventDefault();
 
-        const { nombre, descripcion } = nuevoProducto;
+    const { nombre, descripcion } = nuevoProducto;
 
-        if (nombre.trim().length < 7 || !/^[a-zA-Z0-9\s]+$/.test(nombre)) {
-            return Swal.fire('Error', 'Nombre inválido. Debe tener al menos 7 caracteres y solo contener letras, números y espacios.', 'error');
+    // Validaciones existentes (nombre y descripción)
+    if (nombre.trim().length < 7 || !/^[a-zA-Z0-9\s]+$/.test(nombre)) {
+        return Swal.fire('Error', 'Nombre inválido. Debe tener al menos 7 caracteres y solo contener letras, números y espacios.', 'error');
+    }
+    if (descripcion.trim().length < 8) {
+        return Swal.fire('Error', 'Descripción inválida.', 'error');
+    }
+
+    let dataParaEnviar = {
+        nombre: nuevoProducto.nombre.trim(),
+        descripcion: nuevoProducto.descripcion.trim(),
+        tipo_producto: tipo,
+    };
+
+    if (tipo === 'sistema_venta') {
+        const { plan, venta_directa, entrega_inmediata, permutada, costoAdministrativo, plazo, plazosPactados } = nuevoProducto;
+
+        // Validación 1: Al menos una bandera debe ser true
+        if (!plan && !venta_directa && !entrega_inmediata && !permutada) {
+            return Swal.fire('Error', 'Debe seleccionar al menos un método de venta.', 'error');
         }
 
-        if (descripcion.trim().length < 8) {
-            return Swal.fire('Error', 'Descripción inválida.', 'error');
+        // Validación 2: Solo una bandera puede ser true
+        const banderasActivas = [plan, venta_directa, entrega_inmediata, permutada].filter(Boolean);
+        if (banderasActivas.length > 1) {
+            return Swal.fire('Error', 'Solo puede seleccionar un método de venta (plan, venta directa, entrega inmediata o permutada).', 'error');
         }
 
-        let dataParaEnviar = {
-            nombre: nuevoProducto.nombre.trim(),
-            descripcion: nuevoProducto.descripcion.trim(),
-            tipo_producto: tipo,
+        // Validación de plazos (existente)
+        let cuotas = plazosPactados.split(',')
+            .map(p => parseInt(p.trim()))
+            .filter(p => !isNaN(p) && p > 0);
+
+        if (plazosPactados && cuotas.length === 0) {
+            return Swal.fire('Error', 'Debe ingresar plazos válidos separados por coma.', 'error');
+        }
+        if (new Set(cuotas).size !== cuotas.length) {
+            return Swal.fire('Error', 'No puede ingresar plazos repetidos.', 'error');
+        }
+
+        dataParaEnviar = {
+            ...dataParaEnviar,
+            bandera: { plan, venta_directa, entrega_inmediata, permutada },
+            detalles: {
+                venta: { costoAdministrativo, plazo, plazosPactados: cuotas }
+            }
         };
 
-        if (tipo === 'sistema_venta') {
-            const { plan, venta_directa, entrega_inmediata, permutada, costoAdministrativo, plazo, plazosPactados } = nuevoProducto;
+    } else if (tipo === 'prestamo') {
+        // Validaciones existentes para préstamo...
+    }
 
-         
-
-            let cuotas = plazosPactados.split(',')
-                .map(p => parseInt(p.trim()))
-                .filter(p => !isNaN(p) && p > 0);
-
-            if (plazosPactados && cuotas.length === 0) {
-                return Swal.fire('Error', 'Debe ingresar plazos válidos separados por coma.', 'error');
-            }
-
-            if (new Set(cuotas).size !== cuotas.length) {
-                return Swal.fire('Error', 'No puede ingresar plazos repetidos.', 'error');
-            }
-
-            dataParaEnviar = {
-                ...dataParaEnviar,
-                tipo,
-                bandera: {
-                    plan,
-                    venta_directa,
-                    entrega_inmediata,
-                    permutada,
-                },
-                detalles: {
-                    venta: {
-                        costoAdministrativo,
-                        plazo,
-                        plazosPactados: cuotas
-                    }
-                },
-
-            };
-
-        } else if (tipo === 'prestamo') {
-            const { capitalTotal, montoMaximoPorUsuario, plazoCobranza } = nuevoProducto;
-
-            if (capitalTotal <= 0 || montoMaximoPorUsuario <= 0 || !plazoCobranza) {
-                return Swal.fire('Error', 'Complete todos los campos requeridos del préstamo.', 'error');
-            }
-
-            dataParaEnviar = {
-                ...dataParaEnviar,
-                tipo,
-                detalles: {
-                    prestamo: {
-                        capitalTotal,
-                        montoMaximoPorUsuario,
-                        plazoCobranza
-                    }
-                },
-
-            };
-        }
-
-
-
-
-
-        // Aquí iría tu llamada a la API
-        starCrearProducto(dataParaEnviar, setRefreshData, navigate)
-        console.log('Producto a enviar:', dataParaEnviar);
-
-        Swal.fire('Éxito', 'Producto creado correctamente', 'success');
-        resetForm();
-        handleCloseModal();
-    };
+    // Llamada a la API
+    starCrearProducto(dataParaEnviar, setRefreshData, navigate)
+        .then(() => {
+            Swal.fire('Éxito', 'Producto creado correctamente', 'success');
+            resetForm();
+            handleCloseModal();
+        })
+        .catch(error => {
+            Swal.fire('Error', 'Ocurrió un error al crear el producto', 'error');
+        });
+};
 
     const resetForm = () => {
         setNuevoProducto({

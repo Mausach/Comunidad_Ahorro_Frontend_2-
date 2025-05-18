@@ -4,22 +4,22 @@ import Swal from 'sweetalert2';
 import { starCrearVentaCliente } from '../Helper/crearVenta';
 
 
-export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal, setRefreshData, navigate, esNuevoCliente, producto, users,usuario }) => {
+export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal, setRefreshData, navigate, esNuevoCliente, producto, users, usuario }) => {
 
-
+    console.log(producto)
     const [newUser, setNewUser] = useState({ //usaremos user pero es de clientes esto luego se movera
     });
     const [isLoading, setIsLoading] = useState(false);
 
     // Filtrar usuarios según rol y supervisorId si es necesario
-    const vendedores = usuario.rol === 'supervisor' 
+    const vendedores = usuario.rol === 'supervisor'
         ? users.filter(user => user.rol === "vendedor" && user.supervisorId === usuario._id)
         : users.filter(user => user.rol === "vendedor");
 
     const cobradores = users.filter(user => user.rol === "cobrador");
     const supervisores = users.filter(user => user.rol === "supervisor");
 
-        // Efecto para autoasignar supervisor si el usuario es supervisor
+    // Efecto para autoasignar supervisor si el usuario es supervisor
     useEffect(() => {
         if (usuario.rol === 'supervisor') {
             setNewUser(prev => ({
@@ -32,14 +32,20 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
         }
     }, [usuario]);
 
-    
+
     // Manejar cambios en el formulario de creación
-  const handleChange = (e) => {
+    const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-    
+
+        // Si es un campo numérico y el valor es negativo, lo ajustamos a 0
+        let processedValue = value;
+        if (type === 'number' && value < 0) {
+            processedValue = 0;
+        }
+
         if (name === "vendedor") {
             const vendedorSeleccionado = vendedores.find(v => v._id === value);
-    
+
             setNewUser((prev) => ({
                 ...prev,
                 ve_id: value,
@@ -50,7 +56,7 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
         } else if (name === "supervisor" && usuario.rol !== 'supervisor') {
             // Solo permitir cambiar supervisor si no es supervisor
             const supervisorSeleccionado = supervisores.find(s => s._id === value);
-        
+
             setNewUser((prev) => ({
                 ...prev,
                 sup_id: value,
@@ -60,7 +66,7 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
             }));
         } else if (name === "cobrador") {
             const cobradorSeleccionado = cobradores.find(c => c._id === value);
-    
+
             setNewUser((prev) => ({
                 ...prev,
                 cob_id: value,
@@ -81,20 +87,21 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
         e.preventDefault();
         setIsLoading(true);
 
-        const usuarioFinal = { ...newUser, //aqui debajo pondremos todos los datos fijos que se enviaran al backend
-            clienteNuevo :esNuevoCliente,
-            nombreProd:producto.nombre,
+        const usuarioFinal = {
+            ...newUser, //aqui debajo pondremos todos los datos fijos que se enviaran al backend
+            clienteNuevo: esNuevoCliente,
+            nombreProd: producto.nombre,
             tipo: producto.tipo,
             productoId: producto._id,
-            costeAdmin:producto.detalles.venta.costoAdministrativo,
+            costeAdmin: producto.detalles.venta.costoAdministrativo,
             //banderas (ver si es necesario)
-            ventaDirecta :producto.bandera.venta_directa,
-            largoPlazo :producto.bandera.plan,
-            entregaInmediata :producto.bandera.entrega_inmediata,
-            permutada :producto.bandera.permutada,
-            
-            
-         };
+            ventaDirecta: producto.bandera.venta_directa,
+            largoPlazo: producto.bandera.plan,
+            entregaInmediata: producto.bandera.entrega_inmediata,
+            permutada: producto.bandera.permutada,
+
+
+        };
 
         //  Validación si es nuevo cliente
         if (esNuevoCliente) {
@@ -191,13 +198,13 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
 
 
         try {
-//falta asignarle el vendedor al usuario cuando no se selecciona nada.
-            
+            //falta asignarle el vendedor al usuario cuando no se selecciona nada.
+
 
 
             // Aquí enviarías usuarioFinal
             console.log('Creando venta:', usuarioFinal);
-             await starCrearVentaCliente(usuarioFinal, setRefreshData, navigate);
+            await starCrearVentaCliente(usuarioFinal, setRefreshData, navigate);
 
             // Resetear form
             setNewUser({});
@@ -221,7 +228,7 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
 
                     <Form onSubmit={handleSubmit}>
 
-                     
+
 
 
                         {esNuevoCliente ? (
@@ -237,6 +244,8 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                 name="nombre"
                                                 value={newUser.nombre || ''}
                                                 onChange={handleChange}
+                                                isInvalid={!newUser.nombre} // Muestra error si está vacío
+                                                required
                                             />
                                         </Form.Group>
                                     </Col>
@@ -248,6 +257,8 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                 name="apellido"
                                                 value={newUser.apellido || ''}
                                                 onChange={handleChange}
+                                                isInvalid={!newUser.apellido} // Muestra error si está vacío
+                                                required
                                             />
                                         </Form.Group>
                                     </Col>
@@ -259,6 +270,8 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                 name="nombre_fam"
                                                 value={newUser.nombre_fam || ''}
                                                 onChange={handleChange}
+                                                isInvalid={!newUser.nombre_fam} // Muestra error si está vacío
+                                                required
                                             />
                                         </Form.Group>
                                     </Col>
@@ -270,6 +283,8 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                 name="apellido_fam"
                                                 value={newUser.apellido_fam || ''}
                                                 onChange={handleChange}
+                                                isInvalid={!newUser.apellido_fam} // Muestra error si está vacío
+                                                required
                                             />
                                         </Form.Group>
                                     </Col>
@@ -281,6 +296,8 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                 name="dni"
                                                 value={newUser.dni || ''}
                                                 onChange={handleChange}
+                                                isInvalid={!newUser.dni} // Muestra error si está vacío
+                                                required
                                                 minLength={8}
                                                 maxLength={8}
                                             />
@@ -297,32 +314,32 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                             />
                                         </Form.Group>
                                     </Col>
-                                   
-                                    <Col md={4}>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Situacion veraz</Form.Label>
-                                    <Form.Select
-                                        name="situacion_veraz"
-                                        value={newUser.situacion_veraz}
-                                        onChange={handleChange}
-                                    >
-                                        <option value="0">Seleccione la situacion</option>
-                                        {[1, 2, 3, 4, 5, 6].map((num) => {
-                                            // Determina la clase de color en función del número
-                                            let colorClass = "";
-                                            if (num <= 2) colorClass = "text-success";
-                                            else if (num <= 4) colorClass = "text-warning";
-                                            else if (num <= 6) colorClass = "text-danger";
 
-                                            return (
-                                                <option key={num} value={num} className={colorClass}>
-                                                    {num}
-                                                </option>
-                                            );
-                                        })}
-                                    </Form.Select>
-                                </Form.Group>
-                            </Col>
+                                    <Col md={4}>
+                                        <Form.Group className="mb-3">
+                                            <Form.Label>Situacion veraz</Form.Label>
+                                            <Form.Select
+                                                name="situacion_veraz"
+                                                value={newUser.situacion_veraz}
+                                                onChange={handleChange}
+                                            >
+                                                <option value="0">Seleccione la situacion</option>
+                                                {[1, 2, 3, 4, 5, 6].map((num) => {
+                                                    // Determina la clase de color en función del número
+                                                    let colorClass = "";
+                                                    if (num <= 2) colorClass = "text-success";
+                                                    else if (num <= 4) colorClass = "text-warning";
+                                                    else if (num <= 6) colorClass = "text-danger";
+
+                                                    return (
+                                                        <option key={num} value={num} className={colorClass}>
+                                                            {num}
+                                                        </option>
+                                                    );
+                                                })}
+                                            </Form.Select>
+                                        </Form.Group>
+                                    </Col>
                                 </Row>
 
                                 {/* === Contacto === */}
@@ -347,6 +364,8 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                 name="numero_telefono"
                                                 value={newUser.numero_telefono || ''}
                                                 onChange={handleChange}
+                                                isInvalid={!newUser.numero_telefono} // Muestra error si está vacío
+                                                required
                                             />
                                         </Form.Group>
                                     </Col>
@@ -374,6 +393,9 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                 name="direccion_hogar"
                                                 value={newUser.direccion_hogar || ''}
                                                 onChange={handleChange}
+                                                isInvalid={!newUser.direccion_hogar} // Muestra error si está vacío
+                                                required
+
                                             />
                                         </Form.Group>
                                     </Col>
@@ -396,6 +418,8 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                 name="localidad"
                                                 value={newUser.localidad || ''}
                                                 onChange={handleChange}
+                                                isInvalid={!newUser.localidad} // Muestra error si está vacío
+                                                required
                                             />
                                         </Form.Group>
                                     </Col>
@@ -408,22 +432,22 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
 
                                         <Row>
 
-                                        <Col md={6}>
-                                            <Form.Group className="mb-3">
-                                    <Form.Label> Monto Prestado</Form.Label>
-                                    <Form.Select
-                                        name="montoPrestado"
-                                        value={newUser.montoPrestado}
-                                        onChange={handleChange}
-                                    >
-                                        <option value="">Seleccione un monto</option>
-                                        <option value={100000}>100,000</option>
-                                        <option value={200000}>200,000</option>
-                                        <option value={300000}>300,000</option>
-                                        <option value={400000}>400,000</option>
-                                        <option value={500000}>500,000</option>
-                                    </Form.Select>
-                                </Form.Group>
+                                            <Col md={6}>
+                                                <Form.Group className="mb-3">
+                                                    <Form.Label> Monto Prestado</Form.Label>
+                                                    <Form.Select
+                                                        name="montoPrestado"
+                                                        value={newUser.montoPrestado}
+                                                        onChange={handleChange}
+                                                    >
+                                                        <option value="">Seleccione un monto</option>
+                                                        <option value={100000}>100,000</option>
+                                                        <option value={200000}>200,000</option>
+                                                        <option value={300000}>300,000</option>
+                                                        <option value={400000}>400,000</option>
+                                                        <option value={500000}>500,000</option>
+                                                    </Form.Select>
+                                                </Form.Group>
                                             </Col>
 
 
@@ -435,6 +459,13 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                         name="monto_cuota"
                                                         value={newUser.monto_cuota || ''}
                                                         onChange={handleChange}
+                                                        min="0"
+                                                        onKeyDown={(e) => {
+                                                            // Evita que se escriban caracteres no numéricos
+                                                            if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                                                e.preventDefault();
+                                                            }
+                                                        }}
                                                     />
                                                 </Form.Group>
                                             </Col>
@@ -449,6 +480,13 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                         name="cantidad_cuotas"
                                                         value={newUser.cantidad_cuotas || ''}
                                                         onChange={handleChange}
+                                                        min="0"
+                                                        onKeyDown={(e) => {
+                                                            // Evita que se escriban caracteres no numéricos
+                                                            if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                                                e.preventDefault();
+                                                            }
+                                                        }}
                                                     />
                                                 </Form.Group>
                                             </Col>
@@ -504,40 +542,39 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
 
                                                 <Row>
                                                     {/* Producto y num de contrato */}
-                                                    <Col md={4}>
+                                                    {/* Select para elegir producto disponible */}
+                                                    <Col md={12}>
                                                         <Form.Group className="mb-3">
-                                                            <Form.Label>Producto enntrgado:</Form.Label>
-                                                            <Form.Control
-                                                                type="text"
-                                                                min={0}
-                                                                name="nombre_I"
-                                                                value={newUser.nombre_I}
-                                                                onChange={handleChange}
-                                                            />
-                                                        </Form.Group>
-                                                    </Col>
-                                                    <Col md={4}>
-                                                        <Form.Group className="mb-3">
-                                                            <Form.Label>Modelo:</Form.Label>
-                                                            <Form.Control
-                                                                type="text"
-                                                                min={0}
-                                                                name="modelo"
-                                                                value={newUser.modelo}
-                                                                onChange={handleChange}
-                                                            />
-                                                        </Form.Group>
-                                                    </Col>
-                                                    <Col md={4}>
-                                                        <Form.Group className="mb-3">
-                                                            <Form.Label>Serial (Imei):</Form.Label>
-                                                            <Form.Control
-                                                                type="text"
-                                                                min={0}
-                                                                name="serial"
-                                                                value={newUser.serial}
-                                                                onChange={handleChange}
-                                                            />
+                                                            <Form.Label>Producto disponible:</Form.Label>
+                                                            <Form.Select
+                                                                name="productoSeleccionado"
+                                                                value={newUser.productoSeleccionado || ""} // Asegurar valor inicial
+                                                                onChange={(e) => {
+                                                                    const selectedId = e.target.value;
+                                                                    if (selectedId) {
+                                                                        const productoSeleccionado = producto.detalles.venta.inventario.find(
+                                                                            item => item._id === selectedId
+                                                                        );
+                                                                        // Actualiza el estado con los datos del producto
+                                                                        setNewUser({
+                                                                            ...newUser,
+                                                                            nombre_I: productoSeleccionado.nombreItem,
+                                                                            modelo: productoSeleccionado.modelo,
+                                                                            serial: productoSeleccionado.serial,
+                                                                            productoSeleccionado: selectedId // Opcional: guardar el ID
+                                                                        });
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <option value="">Seleccione un producto...</option>
+                                                                {producto.detalles.venta.inventario
+                                                                    .filter(item => item.estado === 'disponible') // Solo disponibles
+                                                                    .map(item => (
+                                                                        <option key={item._id} value={item._id}>
+                                                                            {`${item.nombreItem} (${item.modelo}) - ${item.serial}`}
+                                                                        </option>
+                                                                    ))}
+                                                            </Form.Select>
                                                         </Form.Group>
                                                     </Col>
                                                 </Row>
@@ -577,7 +614,7 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                     </Col>
                                                 </Row>
 
-                                               
+
 
                                                 <Row>
                                                     <Col md={4}>
@@ -588,6 +625,13 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                                 name="monto_cuota"
                                                                 value={newUser.monto_cuota || ''}
                                                                 onChange={handleChange}
+                                                                min="0"
+                                                                onKeyDown={(e) => {
+                                                                    // Evita que se escriban caracteres no numéricos
+                                                                    if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                                                        e.preventDefault();
+                                                                    }
+                                                                }}
                                                             />
                                                         </Form.Group>
                                                     </Col>
@@ -602,26 +646,33 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                                 name="cantidad_cuotas"
                                                                 value={newUser.cantidad_cuotas || ''}
                                                                 onChange={handleChange}
+                                                                min="0"
+                                                                onKeyDown={(e) => {
+                                                                    // Evita que se escriban caracteres no numéricos
+                                                                    if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                                                        e.preventDefault();
+                                                                    }
+                                                                }}
                                                             />
                                                         </Form.Group>
                                                     </Col>
 
                                                     <Col md={4}>
-                                                <Form.Group className="mb-3">
-                                                    <Form.Label>Plazo</Form.Label>
-                                                    <Form.Select
-                                                        name="plazo"
-                                                        value={newUser.plazo || ''}
-                                                        onChange={handleChange}
-                                                    >
-                                                        <option value="">Seleccionar plazo</option>
-                                                        <option value="diario">Diario</option>
-                                                        <option value="semanal">Semanal</option>
-                                                        <option value="quincenal">Quincenal</option>
-                                                        <option value="mensual">Mensual</option>
-                                                    </Form.Select>
-                                                </Form.Group>
-                                            </Col>
+                                                        <Form.Group className="mb-3">
+                                                            <Form.Label>Plazo</Form.Label>
+                                                            <Form.Select
+                                                                name="plazo"
+                                                                value={newUser.plazo || ''}
+                                                                onChange={handleChange}
+                                                            >
+                                                                <option value="">Seleccionar plazo</option>
+                                                                <option value="diario">Diario</option>
+                                                                <option value="semanal">Semanal</option>
+                                                                <option value="quincenal">Quincenal</option>
+                                                                <option value="mensual">Mensual</option>
+                                                            </Form.Select>
+                                                        </Form.Group>
+                                                    </Col>
                                                 </Row>
 
 
@@ -634,44 +685,45 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                             <>
                                                 <h5 className="mt-4"> Plan entrega inmediata</h5>
 
+
                                                 <Row>
-                                                    {/* Producto y num de contrato */}
-                                                    <Col md={4}>
+
+                                                    {/* Select para elegir producto disponible */}
+                                                    <Col md={12}>
                                                         <Form.Group className="mb-3">
-                                                            <Form.Label>Producto enntrgado:</Form.Label>
-                                                            <Form.Control
-                                                                type="text"
-                                                                min={0}
-                                                                name="nombre_I"
-                                                                value={newUser.nombre_I}
-                                                                onChange={handleChange}
-                                                            />
+                                                            <Form.Label>Producto disponible:</Form.Label>
+                                                            <Form.Select
+                                                                name="productoSeleccionado"
+                                                                value={newUser.productoSeleccionado || ""} // Asegurar valor inicial
+                                                                onChange={(e) => {
+                                                                    const selectedId = e.target.value;
+                                                                    if (selectedId) {
+                                                                        const productoSeleccionado = producto.detalles.venta.inventario.find(
+                                                                            item => item._id === selectedId
+                                                                        );
+                                                                        // Actualiza el estado con los datos del producto
+                                                                        setNewUser({
+                                                                            ...newUser,
+                                                                            nombre_I: productoSeleccionado.nombreItem,
+                                                                            modelo: productoSeleccionado.modelo,
+                                                                            serial: productoSeleccionado.serial,
+                                                                            productoSeleccionado: selectedId // Opcional: guardar el ID
+                                                                        });
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <option value="">Seleccione un producto...</option>
+                                                                {producto.detalles.venta.inventario
+                                                                    .filter(item => item.estado === 'disponible') // Solo disponibles
+                                                                    .map(item => (
+                                                                        <option key={item._id} value={item._id}>
+                                                                            {`${item.nombreItem} (${item.modelo}) - ${item.serial}`}
+                                                                        </option>
+                                                                    ))}
+                                                            </Form.Select>
                                                         </Form.Group>
                                                     </Col>
-                                                    <Col md={4}>
-                                                        <Form.Group className="mb-3">
-                                                            <Form.Label>Modelo:</Form.Label>
-                                                            <Form.Control
-                                                                type="text"
-                                                                min={0}
-                                                                name="modelo"
-                                                                value={newUser.modelo}
-                                                                onChange={handleChange}
-                                                            />
-                                                        </Form.Group>
-                                                    </Col>
-                                                    <Col md={4}>
-                                                        <Form.Group className="mb-3">
-                                                            <Form.Label>Serial (Imei):</Form.Label>
-                                                            <Form.Control
-                                                                type="text"
-                                                                min={0}
-                                                                name="serial"
-                                                                value={newUser.serial}
-                                                                onChange={handleChange}
-                                                            />
-                                                        </Form.Group>
-                                                    </Col>
+
                                                 </Row>
 
                                                 <Row>
@@ -683,6 +735,13 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                                 name="montoEntregaInmediata"
                                                                 value={newUser.montoEntregaInmediata || 0}
                                                                 onChange={handleChange}
+                                                                min="0"
+                                                                onKeyDown={(e) => {
+                                                                    // Evita que se escriban caracteres no numéricos
+                                                                    if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                                                        e.preventDefault();
+                                                                    }
+                                                                }}
                                                             />
                                                         </Form.Group>
                                                     </Col>
@@ -716,6 +775,13 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                                 name="monto_cuota"
                                                                 value={newUser.monto_cuota || ''}
                                                                 onChange={handleChange}
+                                                                min="0"
+                                                                onKeyDown={(e) => {
+                                                                    // Evita que se escriban caracteres no numéricos
+                                                                    if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                                                        e.preventDefault();
+                                                                    }
+                                                                }}
                                                             />
                                                         </Form.Group>
                                                     </Col>
@@ -735,21 +801,21 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                     </Col>
 
                                                     <Col md={4}>
-                                                <Form.Group className="mb-3">
-                                                    <Form.Label>Plazo</Form.Label>
-                                                    <Form.Select
-                                                        name="plazo"
-                                                        value={newUser.plazo || ''}
-                                                        onChange={handleChange}
-                                                    >
-                                                        <option value="">Seleccionar plazo</option>
-                                                        <option value="diario">Diario</option>
-                                                        <option value="semanal">Semanal</option>
-                                                        <option value="quincenal">Quincenal</option>
-                                                        <option value="mensual">Mensual</option>
-                                                    </Form.Select>
-                                                </Form.Group>
-                                            </Col>
+                                                        <Form.Group className="mb-3">
+                                                            <Form.Label>Plazo</Form.Label>
+                                                            <Form.Select
+                                                                name="plazo"
+                                                                value={newUser.plazo || ''}
+                                                                onChange={handleChange}
+                                                            >
+                                                                <option value="">Seleccionar plazo</option>
+                                                                <option value="diario">Diario</option>
+                                                                <option value="semanal">Semanal</option>
+                                                                <option value="quincenal">Quincenal</option>
+                                                                <option value="mensual">Mensual</option>
+                                                            </Form.Select>
+                                                        </Form.Group>
+                                                    </Col>
                                                 </Row>
 
 
@@ -763,40 +829,40 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
 
                                                 <Row>
                                                     {/* Producto y num de contrato */}
-                                                    <Col md={4}>
+
+                                                    {/* Select para elegir producto disponible */}
+                                                    <Col md={12}>
                                                         <Form.Group className="mb-3">
-                                                            <Form.Label>Producto enntrgado:</Form.Label>
-                                                            <Form.Control
-                                                                type="text"
-                                                                min={0}
-                                                                name="nombre_I"
-                                                                value={newUser.nombre_I}
-                                                                onChange={handleChange}
-                                                            />
-                                                        </Form.Group>
-                                                    </Col>
-                                                    <Col md={4}>
-                                                        <Form.Group className="mb-3">
-                                                            <Form.Label>Modelo:</Form.Label>
-                                                            <Form.Control
-                                                                type="text"
-                                                                min={0}
-                                                                name="modelo"
-                                                                value={newUser.modelo}
-                                                                onChange={handleChange}
-                                                            />
-                                                        </Form.Group>
-                                                    </Col>
-                                                    <Col md={4}>
-                                                        <Form.Group className="mb-3">
-                                                            <Form.Label>Serial (Imei):</Form.Label>
-                                                            <Form.Control
-                                                                type="text"
-                                                                min={0}
-                                                                name="serial"
-                                                                value={newUser.serial}
-                                                                onChange={handleChange}
-                                                            />
+                                                            <Form.Label>Producto disponible:</Form.Label>
+                                                            <Form.Select
+                                                                name="productoSeleccionado"
+                                                                value={newUser.productoSeleccionado || ""} // Asegurar valor inicial
+                                                                onChange={(e) => {
+                                                                    const selectedId = e.target.value;
+                                                                    if (selectedId) {
+                                                                        const productoSeleccionado = producto.detalles.venta.inventario.find(
+                                                                            item => item._id === selectedId
+                                                                        );
+                                                                        // Actualiza el estado con los datos del producto
+                                                                        setNewUser({
+                                                                            ...newUser,
+                                                                            nombre_I: productoSeleccionado.nombreItem,
+                                                                            modelo: productoSeleccionado.modelo,
+                                                                            serial: productoSeleccionado.serial,
+                                                                            productoSeleccionado: selectedId // Opcional: guardar el ID
+                                                                        });
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <option value="">Seleccione un producto...</option>
+                                                                {producto.detalles.venta.inventario
+                                                                    .filter(item => item.estado === 'disponible') // Solo disponibles
+                                                                    .map(item => (
+                                                                        <option key={item._id} value={item._id}>
+                                                                            {`${item.nombreItem} (${item.modelo}) - ${item.serial}`}
+                                                                        </option>
+                                                                    ))}
+                                                            </Form.Select>
                                                         </Form.Group>
                                                     </Col>
                                                 </Row>
@@ -810,6 +876,13 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                                 name="monto_cuota"
                                                                 value={newUser.monto_cuota || ''}
                                                                 onChange={handleChange}
+                                                                min="0"
+                                                                onKeyDown={(e) => {
+                                                                    // Evita que se escriban caracteres no numéricos
+                                                                    if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                                                        e.preventDefault();
+                                                                    }
+                                                                }}
                                                             />
                                                         </Form.Group>
                                                     </Col>
@@ -824,26 +897,33 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                                 name="cantidad_cuotas"
                                                                 value={newUser.cantidad_cuotas || ''}
                                                                 onChange={handleChange}
+                                                                min="0"
+                                                                onKeyDown={(e) => {
+                                                                    // Evita que se escriban caracteres no numéricos
+                                                                    if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                                                        e.preventDefault();
+                                                                    }
+                                                                }}
                                                             />
                                                         </Form.Group>
                                                     </Col>
 
                                                     <Col md={4}>
-                                                <Form.Group className="mb-3">
-                                                    <Form.Label>Plazo</Form.Label>
-                                                    <Form.Select
-                                                        name="plazo"
-                                                        value={newUser.plazo || ''}
-                                                        onChange={handleChange}
-                                                    >
-                                                        <option value="">Seleccionar plazo</option>
-                                                        <option value="diario">Diario</option>
-                                                        <option value="semanal">Semanal</option>
-                                                        <option value="quincenal">Quincenal</option>
-                                                        <option value="mensual">Mensual</option>
-                                                    </Form.Select>
-                                                </Form.Group>
-                                            </Col>
+                                                        <Form.Group className="mb-3">
+                                                            <Form.Label>Plazo</Form.Label>
+                                                            <Form.Select
+                                                                name="plazo"
+                                                                value={newUser.plazo || ''}
+                                                                onChange={handleChange}
+                                                            >
+                                                                <option value="">Seleccionar plazo</option>
+                                                                <option value="diario">Diario</option>
+                                                                <option value="semanal">Semanal</option>
+                                                                <option value="quincenal">Quincenal</option>
+                                                                <option value="mensual">Mensual</option>
+                                                            </Form.Select>
+                                                        </Form.Group>
+                                                    </Col>
                                                 </Row>
 
                                                 <Row>
@@ -868,7 +948,31 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                                 name="montoObjetoRecibido"
                                                                 value={newUser.montoObjetoRecibido || ''}
                                                                 onChange={handleChange}
+                                                                min="0"
+                                                                onKeyDown={(e) => {
+                                                                    // Evita que se escriban caracteres no numéricos
+                                                                    if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                                                        e.preventDefault();
+                                                                    }
+                                                                }}
                                                             />
+                                                        </Form.Group>
+                                                    </Col>
+                                                        <Col md={4}>
+                                                        <Form.Group className="mb-3">
+                                                            <Form.Label>Cobrador asigado</Form.Label>
+                                                            <Form.Select
+                                                                name="cobrador"
+                                                                value={newUser.cobrador}
+                                                                onChange={handleChange}
+                                                            >
+                                                                <option value="0">Seleccione un cobrador</option>
+                                                                {cobradores.map((usuarios) => (
+                                                                    <option key={usuarios.id} value={usuarios._id}>
+                                                                        {usuarios.nombre} {usuarios.apellido}
+                                                                    </option>
+                                                                ))}
+                                                            </Form.Select>
                                                         </Form.Group>
                                                     </Col>
 
@@ -911,21 +1015,21 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                         <Row>
 
                                             <Col md={6}>
-                                            <Form.Group className="mb-3">
-                                    <Form.Label> Monto Prestado</Form.Label>
-                                    <Form.Select
-                                       name="montoPrestado"
-                                       value={newUser.montoPrestado}
-                                        onChange={handleChange}
-                                    >
-                                        <option value="">Seleccione un monto</option>
-                                        <option value={100000}>100,000</option>
-                                        <option value={200000}>200,000</option>
-                                        <option value={300000}>300,000</option>
-                                        <option value={400000}>400,000</option>
-                                        <option value={500000}>500,000</option>
-                                    </Form.Select>
-                                </Form.Group>
+                                                <Form.Group className="mb-3">
+                                                    <Form.Label> Monto Prestado</Form.Label>
+                                                    <Form.Select
+                                                        name="montoPrestado"
+                                                        value={newUser.montoPrestado}
+                                                        onChange={handleChange}
+                                                    >
+                                                        <option value="">Seleccione un monto</option>
+                                                        <option value={100000}>100,000</option>
+                                                        <option value={200000}>200,000</option>
+                                                        <option value={300000}>300,000</option>
+                                                        <option value={400000}>400,000</option>
+                                                        <option value={500000}>500,000</option>
+                                                    </Form.Select>
+                                                </Form.Group>
                                             </Col>
 
 
@@ -937,6 +1041,13 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                         name="monto_cuota"
                                                         value={newUser.monto_cuota || ''}
                                                         onChange={handleChange}
+                                                        min="0"
+                                                        onKeyDown={(e) => {
+                                                            // Evita que se escriban caracteres no numéricos
+                                                            if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                                                e.preventDefault();
+                                                            }
+                                                        }}
                                                     />
                                                 </Form.Group>
                                             </Col>
@@ -951,6 +1062,13 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                         name="cantidad_cuotas"
                                                         value={newUser.cantidad_cuotas || ''}
                                                         onChange={handleChange}
+                                                        min="0"
+                                                        onKeyDown={(e) => {
+                                                            // Evita que se escriban caracteres no numéricos
+                                                            if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                                                e.preventDefault();
+                                                            }
+                                                        }}
                                                     />
                                                 </Form.Group>
                                             </Col>
@@ -973,7 +1091,7 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                             </Col>
 
                                             <Col md={4}>
-                                            <Form.Group className="mb-3">
+                                                <Form.Group className="mb-3">
                                                     <Form.Label>Cobrador asigado</Form.Label>
                                                     <Form.Select
                                                         name="cobrador"
@@ -1003,47 +1121,45 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                         {producto.bandera.venta_directa && (
                                             <>
                                                 <h5 className="mt-4"> Venta Directa</h5>
-                                                
+
                                                 <Row>
-                                                    {/* Producto y num de contrato */}
-                                                    <Col md={4}>
+                                                        {/* Select para elegir producto disponible */}
+                                                    <Col md={12}>
                                                         <Form.Group className="mb-3">
-                                                            <Form.Label>Producto enntrgado:</Form.Label>
-                                                            <Form.Control
-                                                                type="text"
-                                                                min={0}
-                                                                name="nombre_I"
-                                                                value={newUser.nombre_I}
-                                                                onChange={handleChange}
-                                                            />
-                                                        </Form.Group>
-                                                    </Col>
-                                                    <Col md={4}>
-                                                        <Form.Group className="mb-3">
-                                                            <Form.Label>Modelo:</Form.Label>
-                                                            <Form.Control
-                                                                type="text"
-                                                                min={0}
-                                                                name="modelo"
-                                                                value={newUser.modelo}
-                                                                onChange={handleChange}
-                                                            />
-                                                        </Form.Group>
-                                                    </Col>
-                                                    <Col md={4}>
-                                                        <Form.Group className="mb-3">
-                                                            <Form.Label>Serial (Imei):</Form.Label>
-                                                            <Form.Control
-                                                                type="text"
-                                                                min={0}
-                                                                name="serial"
-                                                                value={newUser.serial}
-                                                                onChange={handleChange}
-                                                            />
+                                                            <Form.Label>Producto disponible:</Form.Label>
+                                                            <Form.Select
+                                                                name="productoSeleccionado"
+                                                                value={newUser.productoSeleccionado || ""} // Asegurar valor inicial
+                                                                onChange={(e) => {
+                                                                    const selectedId = e.target.value;
+                                                                    if (selectedId) {
+                                                                        const productoSeleccionado = producto.detalles.venta.inventario.find(
+                                                                            item => item._id === selectedId
+                                                                        );
+                                                                        // Actualiza el estado con los datos del producto
+                                                                        setNewUser({
+                                                                            ...newUser,
+                                                                            nombre_I: productoSeleccionado.nombreItem,
+                                                                            modelo: productoSeleccionado.modelo,
+                                                                            serial: productoSeleccionado.serial,
+                                                                            productoSeleccionado: selectedId // Opcional: guardar el ID
+                                                                        });
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <option value="">Seleccione un producto...</option>
+                                                                {producto.detalles.venta.inventario
+                                                                    .filter(item => item.estado === 'disponible') // Solo disponibles
+                                                                    .map(item => (
+                                                                        <option key={item._id} value={item._id}>
+                                                                            {`${item.nombreItem} (${item.modelo}) - ${item.serial}`}
+                                                                        </option>
+                                                                    ))}
+                                                            </Form.Select>
                                                         </Form.Group>
                                                     </Col>
                                                 </Row>
-                                                    
+
 
                                             </>
                                         )}
@@ -1089,6 +1205,13 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                                 name="monto_cuota"
                                                                 value={newUser.monto_cuota || ''}
                                                                 onChange={handleChange}
+                                                                min="0"
+                                                                onKeyDown={(e) => {
+                                                                    // Evita que se escriban caracteres no numéricos
+                                                                    if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                                                        e.preventDefault();
+                                                                    }
+                                                                }}
                                                             />
                                                         </Form.Group>
                                                     </Col>
@@ -1103,50 +1226,57 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                                 name="cantidad_cuotas"
                                                                 value={newUser.cantidad_cuotas || ''}
                                                                 onChange={handleChange}
+                                                                min="0"
+                                                                onKeyDown={(e) => {
+                                                                    // Evita que se escriban caracteres no numéricos
+                                                                    if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                                                        e.preventDefault();
+                                                                    }
+                                                                }}
                                                             />
                                                         </Form.Group>
                                                     </Col>
 
-                                                    
-                                         
+
+
                                                 </Row>
 
                                                 <Row>
 
-                                                <Col md={6}>
-                                            <Form.Group className="mb-3">
-                                                    <Form.Label>Cobrador asigado</Form.Label>
-                                                    <Form.Select
-                                                        name="cobrador"
-                                                        value={newUser.cobrador}
-                                                        onChange={handleChange}
-                                                    >
-                                                        <option value="0">Seleccione un cobrador</option>
-                                                        {cobradores.map((usuarios) => (
-                                                            <option key={usuarios.id} value={usuarios._id}>
-                                                                {usuarios.nombre} {usuarios.apellido}
-                                                            </option>
-                                                        ))}
-                                                    </Form.Select>
-                                                </Form.Group>
-                                            </Col>
+                                                    <Col md={6}>
+                                                        <Form.Group className="mb-3">
+                                                            <Form.Label>Cobrador asigado</Form.Label>
+                                                            <Form.Select
+                                                                name="cobrador"
+                                                                value={newUser.cobrador}
+                                                                onChange={handleChange}
+                                                            >
+                                                                <option value="0">Seleccione un cobrador</option>
+                                                                {cobradores.map((usuarios) => (
+                                                                    <option key={usuarios.id} value={usuarios._id}>
+                                                                        {usuarios.nombre} {usuarios.apellido}
+                                                                    </option>
+                                                                ))}
+                                                            </Form.Select>
+                                                        </Form.Group>
+                                                    </Col>
 
-                                                <Col md={6}>
-                                                <Form.Group className="mb-3">
-                                                    <Form.Label>Plazo</Form.Label>
-                                                    <Form.Select
-                                                        name="plazo"
-                                                        value={newUser.plazo || ''}
-                                                        onChange={handleChange}
-                                                    >
-                                                        <option value="">Seleccionar plazo</option>
-                                                        <option value="diario">Diario</option>
-                                                        <option value="semanal">Semanal</option>
-                                                        <option value="quincenal">Quincenal</option>
-                                                        <option value="mensual">Mensual</option>
-                                                    </Form.Select>
-                                                </Form.Group>
-                                            </Col>
+                                                    <Col md={6}>
+                                                        <Form.Group className="mb-3">
+                                                            <Form.Label>Plazo</Form.Label>
+                                                            <Form.Select
+                                                                name="plazo"
+                                                                value={newUser.plazo || ''}
+                                                                onChange={handleChange}
+                                                            >
+                                                                <option value="">Seleccionar plazo</option>
+                                                                <option value="diario">Diario</option>
+                                                                <option value="semanal">Semanal</option>
+                                                                <option value="quincenal">Quincenal</option>
+                                                                <option value="mensual">Mensual</option>
+                                                            </Form.Select>
+                                                        </Form.Group>
+                                                    </Col>
 
                                                 </Row>
 
@@ -1160,41 +1290,39 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                 <h5 className="mt-4"> Plan entrega inmediata</h5>
 
                                                 <Row>
-                                                    {/* Producto y num de contrato */}
-                                                    <Col md={4}>
+                                                      {/* Select para elegir producto disponible */}
+                                                    <Col md={12}>
                                                         <Form.Group className="mb-3">
-                                                            <Form.Label>Producto enntrgado:</Form.Label>
-                                                            <Form.Control
-                                                                type="text"
-                                                                min={0}
-                                                                name="nombre_I"
-                                                                value={newUser.nombre_I}
-                                                                onChange={handleChange}
-                                                            />
-                                                        </Form.Group>
-                                                    </Col>
-                                                    <Col md={4}>
-                                                        <Form.Group className="mb-3">
-                                                            <Form.Label>Modelo:</Form.Label>
-                                                            <Form.Control
-                                                                type="text"
-                                                                min={0}
-                                                                name="modelo"
-                                                                value={newUser.modelo}
-                                                                onChange={handleChange}
-                                                            />
-                                                        </Form.Group>
-                                                    </Col>
-                                                    <Col md={4}>
-                                                        <Form.Group className="mb-3">
-                                                            <Form.Label>Serial (Imei):</Form.Label>
-                                                            <Form.Control
-                                                                type="text"
-                                                                min={0}
-                                                                name="serial"
-                                                                value={newUser.serial}
-                                                                onChange={handleChange}
-                                                            />
+                                                            <Form.Label>Producto disponible:</Form.Label>
+                                                            <Form.Select
+                                                                name="productoSeleccionado"
+                                                                value={newUser.productoSeleccionado || ""} // Asegurar valor inicial
+                                                                onChange={(e) => {
+                                                                    const selectedId = e.target.value;
+                                                                    if (selectedId) {
+                                                                        const productoSeleccionado = producto.detalles.venta.inventario.find(
+                                                                            item => item._id === selectedId
+                                                                        );
+                                                                        // Actualiza el estado con los datos del producto
+                                                                        setNewUser({
+                                                                            ...newUser,
+                                                                            nombre_I: productoSeleccionado.nombreItem,
+                                                                            modelo: productoSeleccionado.modelo,
+                                                                            serial: productoSeleccionado.serial,
+                                                                            productoSeleccionado: selectedId // Opcional: guardar el ID
+                                                                        });
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <option value="">Seleccione un producto...</option>
+                                                                {producto.detalles.venta.inventario
+                                                                    .filter(item => item.estado === 'disponible') // Solo disponibles
+                                                                    .map(item => (
+                                                                        <option key={item._id} value={item._id}>
+                                                                            {`${item.nombreItem} (${item.modelo}) - ${item.serial}`}
+                                                                        </option>
+                                                                    ))}
+                                                            </Form.Select>
                                                         </Form.Group>
                                                     </Col>
                                                 </Row>
@@ -1208,6 +1336,13 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                                 name="montoEntregaInmediata"
                                                                 value={newUser.montoEntregaInmediata || 0}
                                                                 onChange={handleChange}
+                                                                min="0"
+                                                                onKeyDown={(e) => {
+                                                                    // Evita que se escriban caracteres no numéricos
+                                                                    if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                                                        e.preventDefault();
+                                                                    }
+                                                                }}
                                                             />
                                                         </Form.Group>
                                                     </Col>
@@ -1239,8 +1374,15 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                             <Form.Control
                                                                 type="number"
                                                                 name="monto_cuota"
-                                                                value={newUser.monto_cuota || ''}
+                                                                value={newUser.monto_cuota || 0}
                                                                 onChange={handleChange}
+                                                                min="0"
+                                                                onKeyDown={(e) => {
+                                                                    // Evita que se escriban caracteres no numéricos
+                                                                    if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                                                        e.preventDefault();
+                                                                    }
+                                                                }}
                                                             />
                                                         </Form.Group>
                                                     </Col>
@@ -1253,51 +1395,58 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                             <Form.Control
                                                                 type="number"
                                                                 name="cantidad_cuotas"
-                                                                value={newUser.cantidad_cuotas || ''}
+                                                                value={newUser.cantidad_cuotas || 0}
                                                                 onChange={handleChange}
+                                                                min="0"
+                                                                onKeyDown={(e) => {
+                                                                    // Evita que se escriban caracteres no numéricos
+                                                                    if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                                                        e.preventDefault();
+                                                                    }
+                                                                }}
                                                             />
                                                         </Form.Group>
                                                     </Col>
 
-                                                   
+
                                                 </Row>
 
                                                 <Row>
 
-                                                <Col md={6}>
-                                            <Form.Group className="mb-3">
-                                                    <Form.Label>Cobrador asigado</Form.Label>
-                                                    <Form.Select
-                                                        name="cobrador"
-                                                        value={newUser.cobrador}
-                                                        onChange={handleChange}
-                                                    >
-                                                        <option value="0">Seleccione un cobrador</option>
-                                                        {cobradores.map((usuarios) => (
-                                                            <option key={usuarios.id} value={usuarios._id}>
-                                                                {usuarios.nombre} {usuarios.apellido}
-                                                            </option>
-                                                        ))}
-                                                    </Form.Select>
-                                                </Form.Group>
-                                            </Col>
+                                                    <Col md={6}>
+                                                        <Form.Group className="mb-3">
+                                                            <Form.Label>Cobrador asigado</Form.Label>
+                                                            <Form.Select
+                                                                name="cobrador"
+                                                                value={newUser.cobrador}
+                                                                onChange={handleChange}
+                                                            >
+                                                                <option value="0">Seleccione un cobrador</option>
+                                                                {cobradores.map((usuarios) => (
+                                                                    <option key={usuarios.id} value={usuarios._id}>
+                                                                        {usuarios.nombre} {usuarios.apellido}
+                                                                    </option>
+                                                                ))}
+                                                            </Form.Select>
+                                                        </Form.Group>
+                                                    </Col>
 
-                                                <Col md={6}>
-                                                <Form.Group className="mb-3">
-                                                    <Form.Label>Plazo</Form.Label>
-                                                    <Form.Select
-                                                        name="plazo"
-                                                        value={newUser.plazo || ''}
-                                                        onChange={handleChange}
-                                                    >
-                                                        <option value="">Seleccionar plazo</option>
-                                                        <option value="diario">Diario</option>
-                                                        <option value="semanal">Semanal</option>
-                                                        <option value="quincenal">Quincenal</option>
-                                                        <option value="mensual">Mensual</option>
-                                                    </Form.Select>
-                                                </Form.Group>
-                                            </Col>
+                                                    <Col md={6}>
+                                                        <Form.Group className="mb-3">
+                                                            <Form.Label>Plazo</Form.Label>
+                                                            <Form.Select
+                                                                name="plazo"
+                                                                value={newUser.plazo || ''}
+                                                                onChange={handleChange}
+                                                            >
+                                                                <option value="">Seleccionar plazo</option>
+                                                                <option value="diario">Diario</option>
+                                                                <option value="semanal">Semanal</option>
+                                                                <option value="quincenal">Quincenal</option>
+                                                                <option value="mensual">Mensual</option>
+                                                            </Form.Select>
+                                                        </Form.Group>
+                                                    </Col>
                                                 </Row>
 
 
@@ -1311,40 +1460,39 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
 
                                                 <Row>
                                                     {/* Producto y num de contrato */}
-                                                    <Col md={4}>
+                                                 {/* Select para elegir producto disponible */}
+                                                    <Col md={12}>
                                                         <Form.Group className="mb-3">
-                                                            <Form.Label>Producto enntrgado:</Form.Label>
-                                                            <Form.Control
-                                                                type="text"
-                                                                min={0}
-                                                                name="nombre_I"
-                                                                value={newUser.nombre_I}
-                                                                onChange={handleChange}
-                                                            />
-                                                        </Form.Group>
-                                                    </Col>
-                                                    <Col md={4}>
-                                                        <Form.Group className="mb-3">
-                                                            <Form.Label>Modelo:</Form.Label>
-                                                            <Form.Control
-                                                                type="text"
-                                                                min={0}
-                                                                name="modelo"
-                                                                value={newUser.modelo}
-                                                                onChange={handleChange}
-                                                            />
-                                                        </Form.Group>
-                                                    </Col>
-                                                    <Col md={4}>
-                                                        <Form.Group className="mb-3">
-                                                            <Form.Label>Serial (Imei):</Form.Label>
-                                                            <Form.Control
-                                                                type="text"
-                                                                min={0}
-                                                                name="serial"
-                                                                value={newUser.serial}
-                                                                onChange={handleChange}
-                                                            />
+                                                            <Form.Label>Producto disponible:</Form.Label>
+                                                            <Form.Select
+                                                                name="productoSeleccionado"
+                                                                value={newUser.productoSeleccionado || ""} // Asegurar valor inicial
+                                                                onChange={(e) => {
+                                                                    const selectedId = e.target.value;
+                                                                    if (selectedId) {
+                                                                        const productoSeleccionado = producto.detalles.venta.inventario.find(
+                                                                            item => item._id === selectedId
+                                                                        );
+                                                                        // Actualiza el estado con los datos del producto
+                                                                        setNewUser({
+                                                                            ...newUser,
+                                                                            nombre_I: productoSeleccionado.nombreItem,
+                                                                            modelo: productoSeleccionado.modelo,
+                                                                            serial: productoSeleccionado.serial,
+                                                                            productoSeleccionado: selectedId // Opcional: guardar el ID
+                                                                        });
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <option value="">Seleccione un producto...</option>
+                                                                {producto.detalles.venta.inventario
+                                                                    .filter(item => item.estado === 'disponible') // Solo disponibles
+                                                                    .map(item => (
+                                                                        <option key={item._id} value={item._id}>
+                                                                            {`${item.nombreItem} (${item.modelo}) - ${item.serial}`}
+                                                                        </option>
+                                                                    ))}
+                                                            </Form.Select>
                                                         </Form.Group>
                                                     </Col>
                                                 </Row>
@@ -1356,8 +1504,15 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                             <Form.Control
                                                                 type="number"
                                                                 name="monto_cuota"
-                                                                value={newUser.monto_cuota || ''}
+                                                                value={newUser.monto_cuota || 0}
                                                                 onChange={handleChange}
+                                                                min="0"
+                                                                onKeyDown={(e) => {
+                                                                    // Evita que se escriban caracteres no numéricos
+                                                                    if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                                                        e.preventDefault();
+                                                                    }
+                                                                }}
                                                             />
                                                         </Form.Group>
                                                     </Col>
@@ -1370,28 +1525,35 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                             <Form.Control
                                                                 type="number"
                                                                 name="cantidad_cuotas"
-                                                                value={newUser.cantidad_cuotas || ''}
+                                                                value={newUser.cantidad_cuotas || 0}
                                                                 onChange={handleChange}
+                                                                min="0"
+                                                                onKeyDown={(e) => {
+                                                                    // Evita que se escriban caracteres no numéricos
+                                                                    if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                                                        e.preventDefault();
+                                                                    }
+                                                                }}
                                                             />
                                                         </Form.Group>
                                                     </Col>
 
                                                     <Col md={4}>
-                                                <Form.Group className="mb-3">
-                                                    <Form.Label>Plazo</Form.Label>
-                                                    <Form.Select
-                                                        name="plazo"
-                                                        value={newUser.plazo || ''}
-                                                        onChange={handleChange}
-                                                    >
-                                                        <option value="">Seleccionar plazo</option>
-                                                        <option value="diario">Diario</option>
-                                                        <option value="semanal">Semanal</option>
-                                                        <option value="quincenal">Quincenal</option>
-                                                        <option value="mensual">Mensual</option>
-                                                    </Form.Select>
-                                                </Form.Group>
-                                            </Col>
+                                                        <Form.Group className="mb-3">
+                                                            <Form.Label>Plazo</Form.Label>
+                                                            <Form.Select
+                                                                name="plazo"
+                                                                value={newUser.plazo || ''}
+                                                                onChange={handleChange}
+                                                            >
+                                                                <option value="">Seleccionar plazo</option>
+                                                                <option value="diario">Diario</option>
+                                                                <option value="semanal">Semanal</option>
+                                                                <option value="quincenal">Quincenal</option>
+                                                                <option value="mensual">Mensual</option>
+                                                            </Form.Select>
+                                                        </Form.Group>
+                                                    </Col>
                                                 </Row>
 
                                                 <Row>
@@ -1414,29 +1576,36 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                             <Form.Control
                                                                 type="number"
                                                                 name="montoObjetoRecibido"
-                                                                value={newUser.montoObjetoRecibido || ''}
+                                                                value={newUser.montoObjetoRecibido || 0}
                                                                 onChange={handleChange}
+                                                                min="0"
+                                                                onKeyDown={(e) => {
+                                                                    // Evita que se escriban caracteres no numéricos
+                                                                    if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                                                        e.preventDefault();
+                                                                    }
+                                                                }}
                                                             />
                                                         </Form.Group>
                                                     </Col>
 
                                                     <Col md={4}>
-                                            <Form.Group className="mb-3">
-                                                    <Form.Label>Cobrador asigado</Form.Label>
-                                                    <Form.Select
-                                                        name="cobrador"
-                                                        value={newUser.cobrador}
-                                                        onChange={handleChange}
-                                                    >
-                                                        <option value="0">Seleccione un cobrador</option>
-                                                        {cobradores.map((usuarios) => (
-                                                            <option key={usuarios.id} value={usuarios._id}>
-                                                                {usuarios.nombre} {usuarios.apellido}
-                                                            </option>
-                                                        ))}
-                                                    </Form.Select>
-                                                </Form.Group>
-                                            </Col>
+                                                        <Form.Group className="mb-3">
+                                                            <Form.Label>Cobrador asigado</Form.Label>
+                                                            <Form.Select
+                                                                name="cobrador"
+                                                                value={newUser.cobrador}
+                                                                onChange={handleChange}
+                                                            >
+                                                                <option value="0">Seleccione un cobrador</option>
+                                                                {cobradores.map((usuarios) => (
+                                                                    <option key={usuarios.id} value={usuarios._id}>
+                                                                        {usuarios.nombre} {usuarios.apellido}
+                                                                    </option>
+                                                                ))}
+                                                            </Form.Select>
+                                                        </Form.Group>
+                                                    </Col>
 
                                                 </Row>
 
@@ -1455,8 +1624,8 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
 
                         )}
 
-                           {/*datos comunes en todas las operaciones */}
-                           <h5 className="mt-4">Datos del Contrato y Suscripción</h5>
+                        {/*datos comunes en todas las operaciones */}
+                        <h5 className="mt-4">Datos del Contrato y Suscripción</h5>
                         <Row>
                             <Col md={6}>
                                 <Form.Group className="mb-3">
@@ -1487,18 +1656,25 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
 
                             <Col md={6}>
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Monto Suscripción Venta Directa</Form.Label>
+                                    <Form.Label>Monto Suscripción-Venta Directa-Recibido </Form.Label>
                                     <Form.Control
                                         type="number"
                                         name="monto_suscripcion_vta_dir"
                                         value={newUser.monto_suscripcion_vta_dir || 0}
                                         onChange={handleChange}
+                                        min="0"
+                                        onKeyDown={(e) => {
+                                            // Evita que se escriban caracteres no numéricos
+                                            if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                                e.preventDefault();
+                                            }
+                                        }}
                                     />
                                 </Form.Group>
                             </Col>
 
                             <Col md={6}>
-                            <Form.Group className="mb-3">
+                                <Form.Group className="mb-3">
                                     <Form.Label>Método de Pago Susripcion</Form.Label>
                                     <Form.Select name="metodoPago_monto_sus_vta" value={newUser.metodoPago_monto_sus_vta} onChange={handleChange}>
                                         <option value="">Seleccione un método de pago</option>
@@ -1513,7 +1689,7 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                             </Col>
                         </Row>
 
-                     <Row>
+                        <Row>
                             <Col md={4}>
                                 <Form.Group className="mb-3">
                                     <Form.Label>Vendedor asignado</Form.Label>
@@ -1531,7 +1707,7 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                     </Form.Select>
                                 </Form.Group>
                             </Col>
-                            
+
                             {/* Mostrar select de supervisor solo si no es supervisor */}
                             {usuario.rol !== 'supervisor' && (
                                 <Col md={4}>
@@ -1582,7 +1758,7 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
 
                         {/* Botón de enviar */}
                         <div className="d-flex justify-content-end mt-4">
-                        <Button variant="primary" type="submit" disabled={isLoading}>
+                            <Button variant="primary" type="submit" disabled={isLoading}>
                                 {isLoading ? (
                                     <>
                                         <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>

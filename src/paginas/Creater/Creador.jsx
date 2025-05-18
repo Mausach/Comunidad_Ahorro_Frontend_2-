@@ -111,7 +111,7 @@ export const Creador = () => {
   const handleChange = (user) => {
     Swal.fire({
       title: '¿Cambiar el estado del usuario?',
-      text: `${user.nombres} ${user.apellido}`,
+      text: `${user.nombre} ${user.apellido}`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',

@@ -47,7 +47,7 @@ export const CardLoguin = () => {
         } else {
             // Llamar a la función para iniciar sesión (puedes personalizarla)
             starLogin(user.email, user.password, navigate);
-            console.log(user)
+            
 
         }
     };

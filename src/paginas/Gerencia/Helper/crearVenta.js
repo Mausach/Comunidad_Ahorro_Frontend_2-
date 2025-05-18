@@ -24,7 +24,7 @@ export const starCrearVentaCliente = async (newUser,setRefreshData, navigate) =>
     } catch (error) {
         // Asegúrate de acceder correctamente a los errores
         const errores = error.response?.data?.errors; // Obtén todos los errores
-
+        
         // Si tienes errores, muestra el mensaje de uno de los campos
         if (errores) {
             // Obtener el primer mensaje de error (puedes personalizar esto según el comportamiento)

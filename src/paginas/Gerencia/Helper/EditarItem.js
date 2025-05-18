@@ -21,7 +21,7 @@ export const starEditItem = async (newItems, setRefreshData, navigate) => {
     setRefreshData(true); // Refrescar los datos
   } catch (error) {
     const errores = error.response?.data?.errors;
-    console.log("Respuesta backend:", resp.data);
+    console.log("Respuesta backend:", error);
     if (errores) {
       const mensajeDeError = Object.values(errores)[0]?.msg || 'Error al editar el ítems';
       Swal.fire({

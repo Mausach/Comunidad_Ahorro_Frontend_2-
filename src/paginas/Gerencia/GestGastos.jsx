@@ -158,7 +158,7 @@ export const GestGastos = () => {
                         <Card.Body>
                             <ListGroup variant="flush">
                                 <ListGroup.Item>
-                                    <strong>Fecha: </strong> {formatFechaArgentina(gasto.fecha)}
+                                    <strong>Fecha: </strong> {gasto.fecha}
                                 </ListGroup.Item>
                                 <ListGroup.Item>
                                     <strong>Monto: </strong> {formatMonto(gasto.Monto_gasto)}

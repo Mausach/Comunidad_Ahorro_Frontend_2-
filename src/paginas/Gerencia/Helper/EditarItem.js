@@ -3,7 +3,7 @@ import authApi from "../../../api/authApi";
 
 export const starEditItem = async (newItems, setRefreshData, navigate) => {
   try {
-    const resp = await authApi.put('/prod/edit_item-stock', newItems);
+    const resp = await authApi.put('/inventario/edit_item-stock', newItems);
 
     Swal.fire({
       title: "Ítems editado",

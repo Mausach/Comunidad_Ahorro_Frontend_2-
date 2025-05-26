@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Card, Button, Modal, Form } from "react-bootstrap";
 import { starEditarProductos } from "../Helper/EditarProducto";
 import { GestStock } from "../GestStock";
+import { starCambiarEstado } from "../Helper/cambiarEstadoProd";
 
 const CardProducto = ({ usuario, producto, handleStock, setRefreshData, navigate }) => {
     const [showModal, setShowModal] = useState(false);
@@ -11,6 +12,7 @@ const CardProducto = ({ usuario, producto, handleStock, setRefreshData, navigate
 
     const handleCambiarEstado = () => {
         // Aquí deberías hacer la llamada a la API si corresponde
+        starCambiarEstado(formData, setRefreshData, navigate)
         setEstadoActivo(!estadoActivo);
         // También podrías notificar al servidor con fetch/axios
     };

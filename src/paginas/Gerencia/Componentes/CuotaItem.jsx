@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button, Form, Badge, ListGroup, Alert } from "react-bootstrap";
 import Swal from "sweetalert2";
 import { starCobrarCuota } from "../Helper/CobrarCuota";
+import { starEditarCuota } from "../Helper/EditarCuota";
 
 const CuotaItem = ({ cuota, venta, usuario, setRefreshData, navigate }) => {
     const [activeForm, setActiveForm] = useState(null);
@@ -9,6 +10,7 @@ const CuotaItem = ({ cuota, venta, usuario, setRefreshData, navigate }) => {
     const [montoCobrado, setMontoCobrado] = useState("");
     const [comentario, setComentario] = useState("");
     const [fechaCobro, setFechaCobro] = useState("");
+     const [nuevoMonto, setNuevoMonto] = useState(cuota.montoCuota); // Estado para el nuevo mont
     const [error, setError] = useState(null);
 
     const resetForm = () => {
@@ -16,13 +18,12 @@ const CuotaItem = ({ cuota, venta, usuario, setRefreshData, navigate }) => {
         setMontoCobrado("");
         setComentario("");
         setFechaCobro("");
+        setNuevoMonto(cuota.montoCuota); // Resetear al monto original
         setActiveForm(null);
         setError(null);
     };
 
-    // Función para formatear fechas en el frontend
-
-
+    // manda el estado y datos de la cobranza de una cuota
     const handleSubmit = async (estado) => {
         try {
             setError(null);
@@ -101,6 +102,49 @@ const CuotaItem = ({ cuota, venta, usuario, setRefreshData, navigate }) => {
 
         return <Badge bg={variant}>{estado}</Badge>;
     };
+
+    //edita monto de la cuota
+    const handleEditarMonto = async () => {
+        try {
+            if (!nuevoMonto || nuevoMonto <= 0) {
+                throw new Error("El monto debe ser mayor a cero");
+            }
+
+            const payload = {
+                ventaId: venta._id,
+                cuotaId: cuota._id,
+                estado_cuota: cuota.estado_cuota, // Mantener el estado actual
+                montoCuota: parseFloat(nuevoMonto),
+                cobrador: {
+                    _id: usuario._id,
+                    dni: usuario.dni,
+                    nombre: usuario.nombre,
+                    apellido: usuario.apellido
+                },
+                comentario: "Monto de cuota modificado" // Puedes personalizar esto
+            };
+
+            console.log("Datos enviados para editar monto:", payload);
+            await starEditarCuota(payload, setRefreshData, navigate);
+
+            resetForm();
+            Swal.fire({
+                icon: 'success',
+                title: 'Monto actualizado',
+                text: `El monto de la cuota se ha actualizado a $${nuevoMonto.toLocaleString('es-AR')}`,
+                timer: 2000
+            });
+        } catch (error) {
+            setError(error.message);
+            console.error("Error al editar monto:", error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message
+            });
+        }
+    };
+
 
     const renderForm = () => {
         switch (activeForm) {
@@ -253,6 +297,55 @@ const CuotaItem = ({ cuota, venta, usuario, setRefreshData, navigate }) => {
                     </div>
                 );
 
+            case "editarMonto":
+                return (
+                    <div className="mt-2" style={{ minWidth: '250px' }}>
+                        <Form.Group className="mb-2">
+                            <Form.Label>Nuevo monto de cuota</Form.Label>
+                            <Form.Control
+                                type="number"
+                                min="0.01"
+                                step="0.01"
+                                value={nuevoMonto}
+                                onChange={(e) => setNuevoMonto(e.target.value)}
+                                placeholder={`Monto actual: $${cuota.montoCuota?.toLocaleString('es-AR')}`}
+                                required
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-2">
+                            <Form.Label>Comentario (opcional)</Form.Label>
+                            <Form.Control
+                                as="textarea"
+                                rows={2}
+                                value={comentario}
+                                onChange={(e) => setComentario(e.target.value)}
+                            />
+                        </Form.Group>
+
+                        {error && <Alert variant="danger" className="py-2">{error}</Alert>}
+
+                        <div className="d-flex justify-content-end gap-2">
+                            <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={handleEditarMonto}
+                                disabled={!nuevoMonto || nuevoMonto <= 0}
+                            >
+                                Confirmar Cambio
+                            </Button>
+                            <Button
+                                variant="outline-secondary"
+                                size="sm"
+                                onClick={resetForm}
+                            >
+                                Cancelar
+                            </Button>
+                        </div>
+                    </div>
+                );
+
+
             default:
                 return null;
         }
@@ -296,6 +389,13 @@ const CuotaItem = ({ cuota, venta, usuario, setRefreshData, navigate }) => {
                                     </Button>
                                     <Button variant="outline-danger" size="sm" onClick={() => setActiveForm("no pagado")}>
                                         <i className="bi bi-x-circle me-1"></i> No Pagará
+                                    </Button>
+                                    <Button
+                                        variant="outline-primary"
+                                        size="sm"
+                                        onClick={() => setActiveForm("editarMonto")}
+                                    >
+                                        <i className="bi bi-pencil me-1"></i> Editar Monto
                                     </Button>
                                 </div>
                             ) : (

@@ -18,6 +18,7 @@ import { VendedorRep } from '../paginas/Vendedor/VendedorRep'
 import { GestGastos } from '../paginas/Gerencia/GestGastos'
 import { ReportVentas } from '../paginas/Gerencia/ReportVentas'
 import { ReportPrestamos } from '../paginas/Gerencia/ReportPrestamos'
+import { GestorInventario } from '../paginas/Gerencia/GestInventario'
 
 
 /*
@@ -67,6 +68,8 @@ export const AppRouter = () => {
         <Route path="/gest-gastos" element={<GestGastos />} />
         <Route path="/report-vtas" element={<ReportVentas />} />
         <Route path="/report-prest" element={<ReportPrestamos />} />
+
+        <Route path="/gest-inv" element={<GestorInventario />} />
         
         <Route path="/cobrador" element={<CobranzaCobrador />} />
         <Route path="/rep-cobrador" element={<ReportCobrador />} />

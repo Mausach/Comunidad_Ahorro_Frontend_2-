@@ -1,13 +1,13 @@
 import Swal from "sweetalert2";
 import authApi from "../../../api/authApi";
 
-export const starCrearItems = async (newItems, setRefreshData, navigate) => {
+export const starEditarCuota = async (newItems, setRefreshData, navigate) => {
   try {
-    const resp = await authApi.post('/inventario/push-stock', newItems);
+    const resp = await authApi.put('/cobro/cuotas/editar-monto', newItems);
 
     Swal.fire({
-      title: "Ítems guardado",
-      text: "El ítem ha sido creado exitosamente en stock.",
+      title: "Operación exitosa",
+      text: "La cuota fue editada.",
       icon: "success",
       background: "#f9f9f9",
       confirmButtonColor: "#ffc107",
@@ -18,13 +18,13 @@ export const starCrearItems = async (newItems, setRefreshData, navigate) => {
       },
     });
 
-    //localStorage.setItem('refresh_productos', 'true');
+    
     setRefreshData(true); // Refrescar los datos
   } catch (error) {
     const errores = error.response?.data?.errors;
-
+    
     if (errores) {
-      const mensajeDeError = Object.values(errores)[0]?.msg || 'Error al crear el ítems';
+      const mensajeDeError = Object.values(errores)[0]?.msg || 'Error al editar cuota';
       Swal.fire({
         title: "ERROR",
         text: mensajeDeError,
@@ -38,7 +38,7 @@ export const starCrearItems = async (newItems, setRefreshData, navigate) => {
         },
       });
     } else {
-      const errorMessage = error.response?.data?.msg || 'Error al crear el ítems';
+      const errorMessage = error.response?.data?.msg || 'Error al editar cuota';
       Swal.fire({
         title: "ERROR",
         text: errorMessage,

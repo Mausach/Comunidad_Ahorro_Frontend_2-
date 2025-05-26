@@ -61,6 +61,10 @@ export const NavBar = ({ usuario }) => {
         navigate('/vendedor', { state: usuario })
     }
 
+       const ir_inventario = () => {
+        navigate('/gest-inv', { state: usuario })
+    }
+
     const ir_cobrador_rep = () => {
         navigate('/rep-cobrador', { state: usuario })
     }
@@ -204,6 +208,15 @@ useEffect(() => {
                                         Registrar venta
                                     </Button>
 
+                                    
+                                    <Button
+                                        className="m-2 rounded-3 custom-dropdown-toggle"
+                                        variant="outline-light"
+                                        onClick={ir_inventario}
+                                    >
+                                        Gestionar Inventario
+                                    </Button>
+
                                     <Button
                                         className="m-2 rounded-3 custom-dropdown-toggle"
                                         variant="outline-light"
@@ -299,6 +312,14 @@ useEffect(() => {
                                         onClick={ir_regVen}
                                     >
                                         Registrar venta
+                                    </Button>
+
+                                      <Button
+                                        className="m-2 rounded-3 custom-dropdown-toggle"
+                                        variant="outline-light"
+                                        onClick={ir_inventario}
+                                    >
+                                        Gestionar Inventario
                                     </Button>
 
                                     <Button

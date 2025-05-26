@@ -617,7 +617,7 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
 
 
                                                 <Row>
-                                                    <Col md={4}>
+                                                    <Col md={6}>
                                                         <Form.Group className="mb-3">
                                                             <Form.Label>Monto de la Cuota</Form.Label>
                                                             <Form.Control
@@ -638,7 +638,7 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
 
 
 
-                                                    <Col md={4}>
+                                                    <Col md={6}>
                                                         <Form.Group className="mb-3">
                                                             <Form.Label>Cantidad de Cuotas</Form.Label>
                                                             <Form.Control
@@ -657,7 +657,29 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                         </Form.Group>
                                                     </Col>
 
-                                                    <Col md={4}>
+                                                </Row>
+
+                                                  <Row>
+
+                                                    <Col md={6}>
+                                                        <Form.Group className="mb-3">
+                                                            <Form.Label>Cobrador asigado</Form.Label>
+                                                            <Form.Select
+                                                                name="cobrador"
+                                                                value={newUser.cobrador}
+                                                                onChange={handleChange}
+                                                            >
+                                                                <option value="0">Seleccione un cobrador</option>
+                                                                {cobradores.map((usuarios) => (
+                                                                    <option key={usuarios.id} value={usuarios._id}>
+                                                                        {usuarios.nombre} {usuarios.apellido}
+                                                                    </option>
+                                                                ))}
+                                                            </Form.Select>
+                                                        </Form.Group>
+                                                    </Col>
+
+                                                    <Col md={6}>
                                                         <Form.Group className="mb-3">
                                                             <Form.Label>Plazo</Form.Label>
                                                             <Form.Select
@@ -673,6 +695,7 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                             </Form.Select>
                                                         </Form.Group>
                                                     </Col>
+
                                                 </Row>
 
 
@@ -767,7 +790,7 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                 </Row>
 
                                                 <Row>
-                                                    <Col md={4}>
+                                                    <Col md={6}>
                                                         <Form.Group className="mb-3">
                                                             <Form.Label>Monto de la Cuota</Form.Label>
                                                             <Form.Control
@@ -788,7 +811,7 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
 
 
 
-                                                    <Col md={4}>
+                                                    <Col md={6}>
                                                         <Form.Group className="mb-3">
                                                             <Form.Label>Cantidad de Cuotas</Form.Label>
                                                             <Form.Control
@@ -800,7 +823,29 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                         </Form.Group>
                                                     </Col>
 
-                                                    <Col md={4}>
+                                                </Row>
+
+                                                 <Row>
+
+                                                    <Col md={6}>
+                                                        <Form.Group className="mb-3">
+                                                            <Form.Label>Cobrador asigado</Form.Label>
+                                                            <Form.Select
+                                                                name="cobrador"
+                                                                value={newUser.cobrador}
+                                                                onChange={handleChange}
+                                                            >
+                                                                <option value="0">Seleccione un cobrador</option>
+                                                                {cobradores.map((usuarios) => (
+                                                                    <option key={usuarios.id} value={usuarios._id}>
+                                                                        {usuarios.nombre} {usuarios.apellido}
+                                                                    </option>
+                                                                ))}
+                                                            </Form.Select>
+                                                        </Form.Group>
+                                                    </Col>
+
+                                                    <Col md={6}>
                                                         <Form.Group className="mb-3">
                                                             <Form.Label>Plazo</Form.Label>
                                                             <Form.Select
@@ -816,7 +861,9 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
                                                             </Form.Select>
                                                         </Form.Group>
                                                     </Col>
+
                                                 </Row>
+
 
 
 

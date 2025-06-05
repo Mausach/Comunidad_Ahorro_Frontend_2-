@@ -92,8 +92,8 @@ export const ModalCrearClienteVenta = ({ showCreateModal, handleCloseCreateModal
             clienteNuevo: esNuevoCliente,
             nombreProd: producto.nombre,
             tipo: producto.tipo,
-            productoId: producto._id,
-            costeAdmin: producto.detalles.venta.costoAdministrativo,
+            productoId: producto._id,//sacar para "sistema_venta"
+            costeAdmin: producto.detalles.venta.costoAdministrativo,//sacar de momento
             //banderas (ver si es necesario)
             ventaDirecta: producto.bandera.venta_directa,
             largoPlazo: producto.bandera.plan,

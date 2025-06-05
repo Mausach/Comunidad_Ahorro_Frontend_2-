@@ -4,13 +4,19 @@ import { PieChart, Pie, Sector, Cell, Tooltip, ResponsiveContainer } from 'recha
 // Paleta de colores definitiva
 const COLORS_MAP = {
   // Valores principales
+
+  'Total Vendido': '#3366cc',       // Azul corporativo
+
+
+
+
   'Total Cobrado': '#28a745',      // Verde
   'Total Prestado': '#fd7e14',     // Naranja
   'Total a Cobrar': '#ffc107',     // Amarillo
   'Suscripciones Iniciales': '#6f42c1', // Morado
   'Intereses Generados': '#007bff',          // Azul
   'Total Perdido': '#dc3545',           // Rojo
-  
+
   // Métodos de pago
   'Efectivo': '#17a2b8',           // Cyan
   'Transferencia': '#20c997',      // Verde-azulado
@@ -80,24 +86,24 @@ const PieChartComponent = ({ data, title }) => {
               <Cell key={`cell-${index}`} fill={getColor(entry.name)} />
             ))}
           </Pie>
-          <Tooltip 
+          <Tooltip
             formatter={(value) => [`$${value.toLocaleString('es-AR')}`, 'Valor']}
           />
         </PieChart>
       </ResponsiveContainer>
 
       {/* Leyenda */}
-      <div style={{ 
-        display: 'flex', 
-        flexWrap: 'wrap', 
-        justifyContent: 'center', 
+      <div style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
         marginTop: '20px',
         gap: '10px'
       }}>
         {data.map((entry, index) => (
-          <div key={index} style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
+          <div key={index} style={{
+            display: 'flex',
+            alignItems: 'center',
             margin: '0 10px'
           }}>
             <div style={{
@@ -107,7 +113,7 @@ const PieChartComponent = ({ data, title }) => {
               marginRight: '8px',
               borderRadius: '2px',
             }}></div>
-            <span style={{ 
+            <span style={{
               fontWeight: '500',
               color: getColor(entry.name),
               marginRight: '5px'

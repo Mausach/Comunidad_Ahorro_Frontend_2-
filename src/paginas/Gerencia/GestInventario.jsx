@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ListGroup, Button, Form, Badge, Spinner, Alert } from 'react-bootstrap';
+import { ListGroup, Button, Form, Badge, Spinner, Alert, Dropdown, ButtonGroup } from 'react-bootstrap';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { NavBar } from '../../componentes/NavBarGeneral';
@@ -7,6 +7,9 @@ import { ModalCrearItem } from './Componentes/ModalAgregarAStock';
 import { CargarInventario } from './Helper/cargarInventario';
 import { ModalEditarInventario } from './Componentes/ModalEditarItem';
 import { starDropItem } from './Helper/EliminarItem';
+import { CargarUsuarios } from '../Creater/Helper/CargarUsuario';
+import { ModalVentaSistema } from './Componentes/ModalVentaSistema';
+
 
 
 export const GestorInventario = () => {
@@ -22,6 +25,61 @@ export const GestorInventario = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filtroEstado, setFiltroEstado] = useState('todos');
     const [filtroTipo, setFiltroTipo] = useState('todos');
+
+    //para el modal de crear la venta
+    const [users, setUsers] = useState([]);
+    const [showCreateModal2, setShowCreateModal2] = useState(false);
+    const [esNuevoCliente, setEsNuevoCliente] = useState(false);
+    const [tipoVentaSeleccionada, setTipoVentaSeleccionada] = useState('');
+
+
+
+    const handleShowCreateModal = () => { setShowCreateModal(true); };
+    const handleCloseCreateModal = () => { setShowCreateModal(false); setSelectedItem(null); setTipoVentaSeleccionada(''); }
+
+    const handleSeleccionVenta = (item, tipoVenta) => {
+        setSelectedItem(item);
+        setTipoVentaSeleccionada(tipoVenta);
+
+        // Mostrar modal para seleccionar tipo de cliente
+        Swal.fire({
+            title: 'Seleccione una opción',
+            text: '¿Desea realizar esta venta para un cliente nuevo o uno existente?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Cliente Nuevo',
+            cancelButtonText: 'Cliente Existente',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                setEsNuevoCliente(true);
+                setShowCreateModal2(true);
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                setEsNuevoCliente(false);
+                setShowCreateModal2(true);
+            }
+        });
+    };
+
+    useEffect(() => {
+        const anyModalOpen = showCreateModal2;
+
+        if (anyModalOpen) {
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+            document.body.style.overflow = 'hidden';
+            document.body.style.paddingRight = `${scrollbarWidth}px`;
+            document.documentElement.style.paddingRight = `${scrollbarWidth}px`;
+        } else {
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            document.documentElement.style.paddingRight = '';
+        }
+
+        return () => {
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            document.documentElement.style.paddingRight = '';
+        };
+    }, [showCreateModal2]);
 
     // Estados para los modales
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -42,6 +100,7 @@ export const GestorInventario = () => {
                 setLoading(true);
                 setError(null);
                 await CargarInventario(setItems, navigate, { signal });
+                CargarUsuarios(setUsers, navigate);
             } catch (error) {
                 if (error.name !== 'AbortError') {
                     setError("Error crítico. Contacte soporte.");
@@ -144,8 +203,12 @@ export const GestorInventario = () => {
                             value={filtroEstado}
                             onChange={(e) => setFiltroEstado(e.target.value)}
                         >
+
+
+
                             <option value="todos">Todos los estados</option>
                             <option value="disponible">Disponible</option>
+                            <option value="vendido">Vendido</option>
                             <option value="asignado">Asignado</option>
                             <option value="en_reparacion">En reparación</option>
                             <option value="perdido">Perdido/Robo</option>
@@ -260,13 +323,33 @@ export const GestorInventario = () => {
 
                                         <div className="d-flex gap-2">
 
-                                            <Button
-                                                variant="outline-primary"
-                                                size="sm"
-                                              
-                                            >
-                                                <i className="bi bi-cart"> </i> Registrar Venta
-                                            </Button>
+                                            <Dropdown as={ButtonGroup}>
+                                                <Button variant="outline-primary"> <i className="bi bi-cart"> </i> Registrar Venta</Button>
+
+                                                <Dropdown.Toggle split variant="outline-primary" id="dropdown-split-basic" />
+
+                                                <Dropdown.Menu>
+                                                    <Dropdown.Item onClick={() => handleSeleccionVenta(item, 'Venta directa')}>
+                                                        Venta directa
+                                                    </Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => handleSeleccionVenta(item, 'Venta Permutada')}>
+                                                        Venta Permutada
+                                                    </Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => handleSeleccionVenta(item, 'Entrega inmediata')}>
+                                                        Venta sistema 1 Entrega inmediata
+                                                    </Dropdown.Item>
+
+                                                    <Dropdown.Item onClick={() => handleSeleccionVenta(item, 'Venta sistema 2')}>
+                                                        Venta sistema 2
+                                                    </Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => handleSeleccionVenta(item, 'Venta sistema 3')}>
+                                                        Venta sistema 3
+                                                    </Dropdown.Item>
+
+                                                </Dropdown.Menu>
+                                            </Dropdown>
+
+
 
                                             <Button
                                                 variant="outline-primary"
@@ -316,6 +399,23 @@ export const GestorInventario = () => {
                     setRefreshData={setRefreshData}
                     navigate={navigate}
                 />
+
+
+
+                {selectedItem && (
+                    <ModalVentaSistema
+                        showCreateModal={showCreateModal2}
+                        handleCloseCreateModal={handleCloseCreateModal}
+                        setRefreshData={setRefreshData}
+                        navigate={navigate}
+                        esNuevoCliente={esNuevoCliente}
+                        item={selectedItem}
+                        tipoVenta={tipoVentaSeleccionada}
+                        users={users}
+                        usuario={usuario}
+                    />
+                )}
+
 
             </div>
 

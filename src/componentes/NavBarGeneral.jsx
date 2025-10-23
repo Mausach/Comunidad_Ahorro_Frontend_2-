@@ -222,7 +222,7 @@ useEffect(() => {
                                         variant="outline-light"
                                         onClick={ir_regCob}
                                     >
-                                        Realizar cobro
+                                        Gestion de cobranza
                                     </Button>
 
                                     <Button

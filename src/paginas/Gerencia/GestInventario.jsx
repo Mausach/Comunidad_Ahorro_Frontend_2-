@@ -8,15 +8,17 @@ import { CargarInventario } from './Helper/cargarInventario';
 import { ModalEditarInventario } from './Componentes/ModalEditarItem';
 import { starDropItem } from './Helper/EliminarItem';
 import { CargarUsuarios } from '../Creater/Helper/CargarUsuario';
-import { ModalVentaSistema } from './Componentes/ModalVentaSistema';
-
+import { ModalClienteSistema } from './Componentes/ModalCrearCliente_separado';
+import { ModalVentaSistema } from './Componentes/ModalCrearVenta_separado';
+import { starCrearCliente2 } from './Helper/Crear_cliente2';
+import { starProcesarVenta2 } from './Helper/Procesar_venta2';
+// Importamos los nuevos helpers
 
 
 export const GestorInventario = () => {
     const location = useLocation();
     const usuario = location.state;
     const navigate = useNavigate();
-
 
     const [items, setItems] = useState([]);
     const [refreshData, setRefreshData] = useState(false);
@@ -26,70 +28,19 @@ export const GestorInventario = () => {
     const [filtroEstado, setFiltroEstado] = useState('todos');
     const [filtroTipo, setFiltroTipo] = useState('todos');
 
-    //para el modal de crear la venta
-    const [users, setUsers] = useState([]);
-    const [showCreateModal2, setShowCreateModal2] = useState(false);
-    const [esNuevoCliente, setEsNuevoCliente] = useState(false);
-    const [tipoVentaSeleccionada, setTipoVentaSeleccionada] = useState('');
-
-
-
-    const handleShowCreateModal = () => { setShowCreateModal(true); };
-    const handleCloseCreateModal = () => { setShowCreateModal(false); setSelectedItem(null); setTipoVentaSeleccionada(''); }
-
-    const handleSeleccionVenta = (item, tipoVenta) => {
-        setSelectedItem(item);
-        setTipoVentaSeleccionada(tipoVenta);
-
-        // Mostrar modal para seleccionar tipo de cliente
-        Swal.fire({
-            title: 'Seleccione una opción',
-            text: '¿Desea realizar esta venta para un cliente nuevo o uno existente?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Cliente Nuevo',
-            cancelButtonText: 'Cliente Existente',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                setEsNuevoCliente(true);
-                setShowCreateModal2(true);
-            } else if (result.dismiss === Swal.DismissReason.cancel) {
-                setEsNuevoCliente(false);
-                setShowCreateModal2(true);
-            }
-        });
-    };
-
-    useEffect(() => {
-        const anyModalOpen = showCreateModal2;
-
-        if (anyModalOpen) {
-            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-            document.body.style.overflow = 'hidden';
-            document.body.style.paddingRight = `${scrollbarWidth}px`;
-            document.documentElement.style.paddingRight = `${scrollbarWidth}px`;
-        } else {
-            document.body.style.overflow = '';
-            document.body.style.paddingRight = '';
-            document.documentElement.style.paddingRight = '';
-        }
-
-        return () => {
-            document.body.style.overflow = '';
-            document.body.style.paddingRight = '';
-            document.documentElement.style.paddingRight = '';
-        };
-    }, [showCreateModal2]);
-
     // Estados para los modales
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
+    const [showClienteModal, setShowClienteModal] = useState(false);
+    const [showVentaModal, setShowVentaModal] = useState(false);
+
     const [selectedItem, setSelectedItem] = useState(null);
+    const [users, setUsers] = useState([]);
+    const [clienteCreado, setClienteCreado] = useState(null);
+    const [esNuevoCliente, setEsNuevoCliente] = useState(true);
+    const [tipoVentaSeleccionada, setTipoVentaSeleccionada] = useState('');
 
-
-
-    // Obtener inventario al cargar el componente
-
+    // Obtener inventario y usuarios al cargar el componente
     useEffect(() => {
         const controller = new AbortController();
         const { signal } = controller;
@@ -111,7 +62,6 @@ export const GestorInventario = () => {
             }
         };
 
-
         if (refreshData) {
             cargarDatos();
             setRefreshData(false);
@@ -119,30 +69,111 @@ export const GestorInventario = () => {
             cargarDatos();
         }
 
-
-
-
         return () => {
             controller.abort();
             clearTimeout(timeoutId);
         };
-    }, [refreshData]);
+    }, [refreshData, navigate]);
+
+    // Manejar scroll cuando hay modales abiertos
+    useEffect(() => {
+        const anyModalOpen = showCreateModal || showEditModal || showClienteModal || showVentaModal;
+
+        if (anyModalOpen) {
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+            document.body.style.overflow = 'hidden';
+            document.body.style.paddingRight = `${scrollbarWidth}px`;
+            document.documentElement.style.paddingRight = `${scrollbarWidth}px`;
+        } else {
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            document.documentElement.style.paddingRight = '';
+        }
+
+        return () => {
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            document.documentElement.style.paddingRight = '';
+        };
+    }, [showCreateModal, showEditModal, showClienteModal, showVentaModal]);
 
     // Filtrar items según búsqueda y filtros
     const filteredItems = items.filter(item => {
-        // Filtro por término de búsqueda
         const matchesSearch = Object.values(item).some(value =>
             value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
         );
-
-        // Filtro por estado
         const matchesEstado = filtroEstado === 'todos' || item.estado === filtroEstado;
-
-        // Filtro por tipo
         const matchesTipo = filtroTipo === 'todos' || item.tipo === filtroTipo;
 
         return matchesSearch && matchesEstado && matchesTipo;
     });
+
+    // Manejar selección de venta
+    const handleSeleccionVenta = (item, tipoVenta) => {
+        setSelectedItem(item);
+        setTipoVentaSeleccionada(tipoVenta);
+
+        // Mostrar modal para seleccionar tipo de cliente
+        Swal.fire({
+            title: 'Seleccione una opción',
+            text: '¿Desea realizar esta venta para un cliente nuevo o uno existente?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Cliente Nuevo',
+            cancelButtonText: 'Cliente Existente',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                setEsNuevoCliente(true);
+                setShowClienteModal(true);
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                setEsNuevoCliente(false);
+                setShowClienteModal(true);
+            }
+        });
+    };
+
+    // Manejar cliente creado exitosamente
+    const handleClienteCreado = async (clienteData) => {
+        // Si es cliente existente (solo tiene DNI), pasamos directamente a venta
+        if (!esNuevoCliente && clienteData.dni) {
+            setClienteCreado(clienteData);
+            setShowClienteModal(false);
+            setShowVentaModal(true);
+            return;
+        }
+
+        // Si es cliente nuevo, lo creamos en el backend
+        const resultado = await starCrearCliente2(clienteData, setRefreshData, navigate);
+
+        if (resultado.success) {
+            // Usamos el cliente creado en el backend o mantenemos los datos del form
+            setClienteCreado(resultado.cliente || clienteData);
+            setShowClienteModal(false);
+            setShowVentaModal(true);
+        }
+    };
+
+    // Manejar venta creada exitosamente
+    const handleVentaCreada = async (ventaData) => {
+        const resultado = await starProcesarVenta2(ventaData, setRefreshData, navigate);
+
+        if (resultado.success) {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Venta realizada!',
+                text: 'La venta se ha procesado correctamente',
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+            setRefreshData(true);
+            setShowVentaModal(false);
+            setClienteCreado(null);
+            setSelectedItem(null);
+        }
+    };
 
     // Manejar eliminación de item
     const handleEliminarItem = async (itemId) => {
@@ -184,7 +215,6 @@ export const GestorInventario = () => {
             <NavBar usuario={usuario} />
 
             <div className="container-fluid p-4">
-
                 <h2 className="mb-4">Gestión de Inventario</h2>
 
                 {/* Controles de búsqueda y filtros */}
@@ -203,9 +233,6 @@ export const GestorInventario = () => {
                             value={filtroEstado}
                             onChange={(e) => setFiltroEstado(e.target.value)}
                         >
-
-
-
                             <option value="todos">Todos los estados</option>
                             <option value="disponible">Disponible</option>
                             <option value="vendido">Vendido</option>
@@ -322,12 +349,11 @@ export const GestorInventario = () => {
                                         </div>
 
                                         <div className="d-flex gap-2">
-
                                             <Dropdown as={ButtonGroup}>
-                                                <Button variant="outline-primary"> <i className="bi bi-cart"> </i> Registrar Venta</Button>
-
+                                                <Button variant="outline-primary">
+                                                    <i className="bi bi-cart"></i> Registrar Venta
+                                                </Button>
                                                 <Dropdown.Toggle split variant="outline-primary" id="dropdown-split-basic" />
-
                                                 <Dropdown.Menu>
                                                     <Dropdown.Item onClick={() => handleSeleccionVenta(item, 'Venta directa')}>
                                                         Venta directa
@@ -338,18 +364,14 @@ export const GestorInventario = () => {
                                                     <Dropdown.Item onClick={() => handleSeleccionVenta(item, 'Entrega inmediata')}>
                                                         Venta sistema 1 Entrega inmediata
                                                     </Dropdown.Item>
-
                                                     <Dropdown.Item onClick={() => handleSeleccionVenta(item, 'Venta sistema 2')}>
                                                         Venta sistema 2
                                                     </Dropdown.Item>
                                                     <Dropdown.Item onClick={() => handleSeleccionVenta(item, 'Venta sistema 3')}>
                                                         Venta sistema 3
                                                     </Dropdown.Item>
-
                                                 </Dropdown.Menu>
                                             </Dropdown>
-
-
 
                                             <Button
                                                 variant="outline-primary"
@@ -383,14 +405,12 @@ export const GestorInventario = () => {
                 )}
 
                 {/* Modales */}
-
                 <ModalCrearItem
                     show={showCreateModal}
                     handleClose={() => setShowCreateModal(false)}
                     setRefreshData={setRefreshData}
                     navigate={navigate}
                 />
-
 
                 <ModalEditarInventario
                     show={showEditModal}
@@ -400,28 +420,35 @@ export const GestorInventario = () => {
                     navigate={navigate}
                 />
 
+                {/* Nuevos modales para el flujo de venta */}
+                <ModalClienteSistema
+                    show={showClienteModal}
+                    handleClose={() => {
+                        setShowClienteModal(false);
+                        setSelectedItem(null);
+                        setTipoVentaSeleccionada('');
+                    }}
+                    onClienteCreado={handleClienteCreado}
+                    esNuevoCliente={esNuevoCliente}
+                />
 
-
-                {selectedItem && (
+                {selectedItem && clienteCreado && (
                     <ModalVentaSistema
-                        showCreateModal={showCreateModal2}
-                        handleCloseCreateModal={handleCloseCreateModal}
-                        setRefreshData={setRefreshData}
-                        navigate={navigate}
-                        esNuevoCliente={esNuevoCliente}
+                        show={showVentaModal}
+                        handleClose={() => {
+                            setShowVentaModal(false);
+                            setClienteCreado(null);
+                            setSelectedItem(null);
+                        }}
+                        cliente={clienteCreado} // ← Esto debe ser el objeto cliente completo
                         item={selectedItem}
                         tipoVenta={tipoVentaSeleccionada}
                         users={users}
                         usuario={usuario}
+                        onVentaCreada={handleVentaCreada}
                     />
                 )}
-
-
             </div>
-
         </div>
-
-
-
     );
 };

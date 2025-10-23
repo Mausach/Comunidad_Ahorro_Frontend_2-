@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Form, Modal, ListGroup, Accordion, Card, Badge, Spinner, Alert } from 'react-bootstrap';
 import CuotaItem from './CuotaItem';
+import EditarVentaModal from './ModalEditarVenta';
 
 export const ListaVentas = ({ ventas, navigate, usuario, refreshData, setRefreshData }) => {
     const [showClienteModal, setShowClienteModal] = useState(false);
@@ -8,6 +9,7 @@ export const ListaVentas = ({ ventas, navigate, usuario, refreshData, setRefresh
     const [searchTerm, setSearchTerm] = useState('');
     const [showVentaDetails, setShowVentaDetails] = useState(false);
     const [forceUpdate, setForceUpdate] = useState(0); // Nuevo estado
+    const [showEditarModal, setShowEditarModal] = useState(false); // Nuevo estado para modal de edi
 
     // Filtrado de ventas
     const filteredVentas = ventas.filter(venta => {
@@ -53,6 +55,14 @@ export const ListaVentas = ({ ventas, navigate, usuario, refreshData, setRefresh
             case "cobro judicial": return <Badge bg="danger">Judicial</Badge>;
             default: return <Badge bg="secondary">{estado}</Badge>;
         }
+    };
+
+    //modal para editar venta completa
+    const handleUpdateVenta = (ventaActualizada) => {
+        // Actualizar el estado local y forzar refresh
+        setSelectedVenta(ventaActualizada);
+        setRefreshData(prev => !prev);
+        setForceUpdate(prev => prev + 1);
     };
 
     // Efecto para actualizar la venta seleccionada
@@ -103,6 +113,17 @@ export const ListaVentas = ({ ventas, navigate, usuario, refreshData, setRefresh
                                         }}
                                     >
                                         <i className="bi bi-person"></i> Cliente
+                                    </Button>
+                                    <Button
+                                        variant="outline-warning" // Color diferente para editar
+                                        size="sm"
+                                        className="me-2"
+                                        onClick={() => {
+                                            setSelectedVenta(venta);
+                                            setShowEditarModal(true);
+                                        }}
+                                    >
+                                        <i className="bi bi-pencil"></i> Editar
                                     </Button>
                                     <Button
                                         variant="outline-primary"
@@ -250,6 +271,20 @@ export const ListaVentas = ({ ventas, navigate, usuario, refreshData, setRefresh
                     </Button>
                 </Modal.Footer>
             </Modal>
+
+
+            {/* Modal de Edición de Venta */}
+            {selectedVenta && (
+                <EditarVentaModal
+                    show={showEditarModal}
+                    onHide={() => setShowEditarModal(false)}
+                    venta={selectedVenta}
+                    // ❌ ELIMINAR onUpdate
+                    navigate={navigate}
+                    setRefreshData={setRefreshData}
+                />
+            )}
+
         </div>
     );
 };

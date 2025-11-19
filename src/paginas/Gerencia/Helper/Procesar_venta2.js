@@ -35,8 +35,10 @@ export const starProcesarVenta2 = async (ventaData, setRefreshData, navigate) =>
 
     } catch (error) {
         const errores = error.response?.data?.errors;
-        
+        console.log(error.response)
         if (errores) {
+            
+
             const mensajeDeError = Object.values(errores)[0]?.msg || 'Error al procesar la venta';
             
             Swal.fire({

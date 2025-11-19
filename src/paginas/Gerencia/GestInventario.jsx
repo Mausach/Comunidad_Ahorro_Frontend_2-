@@ -430,6 +430,7 @@ export const GestorInventario = () => {
                     }}
                     onClienteCreado={handleClienteCreado}
                     esNuevoCliente={esNuevoCliente}
+                    navigate={navigate}
                 />
 
                 {selectedItem && clienteCreado && (

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Button, Col, Form, Modal, Row } from 'react-bootstrap';
 import Swal from 'sweetalert2';
+import { starBuscarClientePorDNI } from '../Helper/CargarClienteExistVenta';
 
 export const ModalClienteSistema = ({
   show,
   handleClose,
   onClienteCreado,
-  esNuevoCliente = true
+  esNuevoCliente = true,
+  navigate
 }) => {
   const [clienteData, setClienteData] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -68,20 +70,33 @@ export const ModalClienteSistema = ({
     return true;
   };
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validarCliente()) return;
 
     setIsLoading(true);
     try {
-      // Simulamos la creación exitosa del cliente
-      onClienteCreado(clienteData);
+      if (!esNuevoCliente) {
+        // 🔄 CLIENTE EXISTENTE: Usar el helper para buscar
+        const resultado = await starBuscarClientePorDNI(clienteData.dni, navigate);
+        
+        if (resultado.success) {
+          // Pasar los datos completos del cliente encontrado
+          onClienteCreado(resultado.cliente);
+        } else {
+          // El helper ya mostró el error, no necesitamos hacer nada más
+          return;
+        }
+      } else {
+        // ✅ CLIENTE NUEVO: Pasar los datos del formulario
+        onClienteCreado(clienteData);
+      }
     } catch (error) {
-      console.error('Error al crear cliente:', error);
+      console.error('Error inesperado:', error);
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: 'No se pudo crear el cliente. Intente nuevamente.',
+        text: 'Error inesperado al procesar el cliente.',
       });
     } finally {
       setIsLoading(false);

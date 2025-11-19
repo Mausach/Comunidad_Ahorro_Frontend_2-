@@ -329,7 +329,7 @@ export const ModalVentaSistema = ({
       <Row>
         <Col md={6}>
           <Form.Group className="mb-3">
-            <Form.Label>Monto Principal *</Form.Label>
+            <Form.Label>Monto Suscripcion o de Venta</Form.Label>
             <Form.Control
               type="number"
               name="monto_suscripcion_vta_dir"
